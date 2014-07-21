@@ -24,20 +24,16 @@ class Xo extends CI_Controller {
 		
 		//$this->output->enable_profiler(TRUE);		
 		$this->load->helper('url');
-		$this->load->model('Xo_Model', '', true);		
-		//$this->model = & $this->xo_model;		
+		$this->load->model('Xo_Model', '', true);				
 		
-		//$this->LoginByCookies();
+		$this->LoginByCookies();
 	}
 
 	public function index()
 	{	
-		//redirect($this->locale);
-		log_message('debug', 'hello');
-		print('ok');
+		redirect($this->locale);
 	}
 	
-/*	
 	private function SetLang($lang)
 	{
 		$this->locale = '/'.$lang;
@@ -445,6 +441,5 @@ class Xo extends CI_Controller {
 				array('content' => $content, 'title' => 'Xo Game', 'update_url' => $this->locale.$this->update_url)));
 	}
 	
-*/
-}
 
+}
