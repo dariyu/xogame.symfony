@@ -1,4 +1,4 @@
-<?php
+<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 /* 
  * To change this license header, choose License Headers in Project Properties.
@@ -39,7 +39,7 @@ class Xo_Model extends CI_Model {
 	{
 		$query = $this->db->get_where('xo_rooms', array('inviter_login' => $login));
 		
-		if ($query->num_rows() == 0)
+		if (count($query->result()) == 0)
 		{
 			$columns = array('inviter_login' => $login, 'invitee_login' => $invitee, 'state' => serialize(null));
 			return $this->db->insert('xo_rooms', $columns);			
@@ -157,10 +157,11 @@ class Xo_Model extends CI_Model {
 		$this->db->where('inviter_login', $login);
 		$this->db->or_where('invitee_login', $login);
 		$query = $this->db->get('xo_rooms');
+		$result = $query->result();		
 		
-		if ($query !== false && $query->num_rows() > 0)
+		if ($query !== false && count($result) > 0)
 		{
-			$room = $query->result()[0];
+			$room = $result[0];
 			$room->state = unserialize($room->state);
 			return $room;
 		}
@@ -170,8 +171,9 @@ class Xo_Model extends CI_Model {
 	public function GetRoomByInviter($login)
 	{		
 		$query = $this->db->get_where('xo_rooms', array('inviter_login' => $login));
+		$result = $query->result();
 		
-		if ($query !== false && $query->num_rows() > 0)
+		if ($query !== false && count($result) > 0)
 		{
 			$room = $query->result()[0];
 			$room->state = unserialize($room->state);
@@ -185,8 +187,9 @@ class Xo_Model extends CI_Model {
 	{
 		$this->db->where('invitee_login', $login);		
 		$query = $this->db->get('xo_rooms');		
-
-		if ($query !== false && $query->num_rows() > 0)
+		$result = $query->result();
+		
+		if ($query !== false && count($result) > 0)
 		{
 			$room = $query->result()[0];
 			$room->state = unserialize($room->state);
@@ -204,8 +207,9 @@ class Xo_Model extends CI_Model {
 	
 	public function GetUser($login)
 	{
-		$result = $this->db->get_where('xo_users', array('login' => $login));		
-		return $result->num_rows() > 0 ? $result->result()[0] : false;
+		$query = $this->db->get_where('xo_users', array('login' => $login));
+		$result = $query->result();
+		return count($result) > 0 ? $result[0] : false;
 	}
 	
 	public function Register($login, $hash)

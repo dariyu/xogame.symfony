@@ -186,7 +186,7 @@ class CI_DB_pdo_driver extends CI_DB {
 	 * @param	string	an SQL query
 	 * @return	object
 	 */
-	function _execute($sql)
+/*	function _execute($sql)
 	{
 		$sql = $this->_prep_query($sql);
 		$result_id = $this->conn_id->prepare($sql);
@@ -210,7 +210,33 @@ class CI_DB_pdo_driver extends CI_DB {
 
 		return $result;
 	}
+*/
+	
+	function _execute($sql)
+	{
+		$sql = $this->_prep_query($sql);
+		$result_id = $this->conn_id->prepare($sql);
+		$result_id->execute();
 
+		if (is_object($result_id))
+		{
+			if (is_numeric(stripos($sql, 'SELECT')))
+			{
+				$this->affect_rows = count($result_id->fetchAll());
+				$result_id->execute();
+			}
+			else
+			{
+				$this->affect_rows = $result_id->rowCount();
+			}
+		}
+		else
+		{
+			$this->affect_rows = 0;
+		}
+
+		return $result_id;
+	}	
 	// --------------------------------------------------------------------
 
 	/**

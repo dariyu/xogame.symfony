@@ -24,7 +24,7 @@ class Xo extends CI_Controller {
 		
 		//$this->output->enable_profiler(TRUE);		
 		$this->load->helper('url');
-		$this->load->model('Xo_Model', '', true);				
+		$this->load->model('xo_model', '', true);				
 		
 		$this->LoginByCookies();
 	}
