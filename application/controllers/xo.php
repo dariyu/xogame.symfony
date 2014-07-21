@@ -1,47 +1,5 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-/*
-
-class Action {
-
-	private $link = null;
-	
-	function __construct(Action & $link) 
-	{
-		$this->link = $link;
-	}
-	
-	public function Handle($login, CI_Controller & $ctrl)
-	{
-		$result = $this->Exec();
-		
-		if ($result !== true && !is_null($this->link)) { $this->link->Handle($login, $ctrl); }
-	}
-	
-}
-
-class Move extends Action
-{
-	
-	public function Exec($login, CI_Controller & $ctrl)
-	{
-		if (is_null($login)) { return $this->lang->line('error_not_logged_in') ; }
-		
-		$inviter = $ctrl->input->get_put('inviter', '');
-		
-		if ($inviter === false) { return false; }
-			
-		$room = $ctrl->GetRoom($inviter);
-				
-		
-					
-		
-		
-	}
-}
-*/
-
-
 class Xo extends CI_Controller {
 	
 	private $model = null;
@@ -77,7 +35,8 @@ class Xo extends CI_Controller {
 	
 	public function index()
 	{	
-		redirect($this->locale);
+		//redirect($this->locale);
+		print('ok');
 	}
 	
 	public function action_main_page($lang)
