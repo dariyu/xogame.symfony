@@ -6,10 +6,10 @@
 ?>
 	
 	<?php if (isset($error)): ?>
-	<div class="alert alert-danger" role="alert"><strong>Error:</strong> <?php echo $error?></div>	
+	<div class="alert alert-danger" role="alert"><span class="glyphicon glyphicon-exclamation-sign"></span> <?php echo $error?></div>	
 	<?php endif; ?>
 	<?php if (isset($info)): ?>
-	<div class="alert alert-info" role="alert"><?php echo $info?></div>	
+	<div class="alert alert-info" role="alert"><span class="glyphicon glyphicon-info-sign"></span> <?php echo $info?></div>	
 	<?php endif; ?>
 		
 	<?php echo $content; ?>
