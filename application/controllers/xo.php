@@ -23,15 +23,17 @@ class Xo extends CI_Controller {
 		parent::__construct();
 		
 		//$this->output->enable_profiler(TRUE);		
+		$this->load->helper('url');
 		$this->load->model('Xo_Model', '', true);		
 		//$this->model = & $this->xo_model;		
-		$this->load->helper('url');		
+		
 		//$this->LoginByCookies();
 	}
 
 	public function index()
 	{	
 		//redirect($this->locale);
+		log_message('debug', 'hello');
 		print('ok');
 	}
 	

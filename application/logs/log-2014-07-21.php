@@ -930,3 +930,25 @@ DEBUG - 2014-07-21 08:50:31 --> Language file loaded: language/english/profiler_
 DEBUG - 2014-07-21 08:50:31 --> Helper loaded: text_helper
 DEBUG - 2014-07-21 08:50:31 --> Final output sent to browser
 DEBUG - 2014-07-21 08:50:31 --> Total execution time: 0.5410
+DEBUG - 2014-07-21 10:40:38 --> Config Class Initialized
+DEBUG - 2014-07-21 10:40:38 --> Hooks Class Initialized
+DEBUG - 2014-07-21 10:40:38 --> Utf8 Class Initialized
+DEBUG - 2014-07-21 10:40:38 --> UTF-8 Support Enabled
+DEBUG - 2014-07-21 10:40:38 --> URI Class Initialized
+DEBUG - 2014-07-21 10:40:38 --> Router Class Initialized
+DEBUG - 2014-07-21 10:40:38 --> No URI present. Default controller set.
+DEBUG - 2014-07-21 10:40:38 --> Output Class Initialized
+DEBUG - 2014-07-21 10:40:38 --> Security Class Initialized
+DEBUG - 2014-07-21 10:40:38 --> Input Class Initialized
+DEBUG - 2014-07-21 10:40:38 --> Global POST and COOKIE data sanitized
+DEBUG - 2014-07-21 10:40:38 --> Language Class Initialized
+DEBUG - 2014-07-21 10:40:38 --> Loader Class Initialized
+DEBUG - 2014-07-21 10:40:38 --> Controller Class Initialized
+DEBUG - 2014-07-21 10:40:38 --> Helper loaded: url_helper
+DEBUG - 2014-07-21 10:40:38 --> Database Driver Class Initialized
+ERROR - 2014-07-21 10:40:38 --> Severity: 8192  --> mysql_pconnect(): The mysql extension is deprecated and will be removed in the future: use mysqli or PDO instead C:\xampp\htdocs\codeigniter\system\database\drivers\mysql\mysql_driver.php 91
+DEBUG - 2014-07-21 10:40:38 --> Model Class Initialized
+DEBUG - 2014-07-21 10:40:38 --> Model Class Initialized
+DEBUG - 2014-07-21 10:40:38 --> hello
+DEBUG - 2014-07-21 10:40:38 --> Final output sent to browser
+DEBUG - 2014-07-21 10:40:38 --> Total execution time: 0.1500
