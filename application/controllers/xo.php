@@ -3,7 +3,7 @@
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
-error_log('message');
+//error_log('message');
 
 class Xo extends CI_Controller {
 	
