@@ -6,42 +6,12 @@
  * and open the template in the editor.
  */
 
-/*
-class Cache {
-
-	private $memcache = null;
-	
-	function __construct() 
-	{
-		$this->memcache = new Memcache;		
-		$result = $this->memcache->pconnect('localhost', 11211);
-		if ($result === false) { exit('could\'t establish connection'); }
-	}
-	
-	public function Clear()
-	{
-		$this->memcache->flush();
-	}	
-
-	public function Read($key) {		
-		
-		return $this->memcache->get($key);	
-	} 
-	
-	public function Write($key, $val, $ttl = 0) {
-		
-		return $this->memcache->set($key, $val, 0, $ttl);
-	}	
-	
-}
-*/
-
 class Xo_Model extends CI_Model {
 
-	const STATE_CAN_MOVE = 0;
-	const STATE_WAIT_MOVE = 1;
-	const STATE_LOSS = 2;
-	const STATE_WIN = 3;
+//	const STATE_CAN_MOVE = 0;
+//	const STATE_WAIT_MOVE = 1;
+//	const STATE_LOSS = 2;
+//	const STATE_WIN = 3;
 	
 	//$lobby_key = 'xo_lobby';
 	private $updateTime = 120;
@@ -51,7 +21,7 @@ class Xo_Model extends CI_Model {
 		parent::__construct();
 		//$this->cache = new Cache();
 	}
-	
+/*	
 	public function Replay($login)
 	{
 		$room = $this->xo_model->GetRoom($login);
@@ -295,5 +265,5 @@ class Xo_Model extends CI_Model {
 		$this->db->where('timestamp <', $threshold);
 		$this->db->delete('xo_lobby');
 	}
-	
+*/	
 }
