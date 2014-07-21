@@ -220,8 +220,8 @@ class Xo_Model extends CI_Model {
 	
 	public function Login($login, $pass)
 	{
-		$user_result = $this->GetUser($login);		
-				
+		$user_result = $this->GetUser($login);			
+		
 		if ($user_result !== false && $user_result->hash == $pass)
 		{
 			$data = array('login' => $login, 'timestamp' => time());
@@ -230,15 +230,13 @@ class Xo_Model extends CI_Model {
 			
 			if (empty($lobby_result))
 			{
-				$this->db->insert('xo_lobby', $data);
+				return $this->db->insert('xo_lobby', $data);
 			}
 			else 
 			{
 				$this->db->where('login', $login);
-				$this->db->update('xo_lobby', $data);							
-			}
-
-			return true;
+				return $this->db->update('xo_lobby', $data);							
+			}			
 		}
 		else
 		{			

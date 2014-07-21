@@ -24,9 +24,8 @@ class Xo extends CI_Controller {
 		
 		//$this->output->enable_profiler(TRUE);		
 		$this->load->helper('url');
-		$this->load->model('xo_model', '', true);				
+		$this->load->model('xo_model', '', true);
 		
-		$this->LoginByCookies();
 	}
 
 	public function index()
@@ -128,6 +127,9 @@ class Xo extends CI_Controller {
 				
 			$auth = $this->GetAuthFromPost();
 			$result = $this->Login($auth['login'], $auth['hash']);
+			
+			log_message('debug', 'Login::result: '.print_r($result !== false ? 'true' : 'false', true));
+			
 			return $result; 			
 		};		
 		$actions['to_register'] = function (Xo & $this) { 
@@ -144,15 +146,17 @@ class Xo extends CI_Controller {
 		};		
 		
 		$action = $this->input->post('action', true);
-		$result = $this->lang->line('login_login_error');
+		$result = false;
+		
 		if ($action !== false && key_exists($action, $actions) && ($result = $actions[$action]($this)) !== false)
 		{			
 			$this->RenderBoard();
 		}
 		else
 		{
-			$this->RenderContent($this->load->view('login_view', 
-					array('signin_url' => $this->locale.$this->signin_url), true), array('error' => $result));
+			$layoutData = $action !== false ? array('error' => $this->lang->line('login_login_error')) : array();
+			
+			$this->RenderSignin($layoutData);
 		}		 
 	}
 	
@@ -193,18 +197,25 @@ class Xo extends CI_Controller {
 		if ($this->IsSignedElseRenderSignupView())
 		{
 			$result = $this->xo_model->Replay($this->login);
-			$extraData = array();
+			$layoutData = array();
 			
 			if ($result !== true)
 			{
-				$extraData['error'] = $this->lang->line('board_replay_error');
+				$layoutData['error'] = $this->lang->line('board_replay_error');
 			}
 			
-			$this->RenderBoard($extraData);
+			$this->RenderBoard($layoutData);
 		}
 	}
 	
-	private function RenderBoard($extraData = array())
+	private function RenderSignin($layoutData = array())
+	{		
+		$this->RenderContent($this->load->view('login_view', array('signin_url' => $this->locale.$this->signin_url), true),
+				array_merge(array('no_update' => true), $layoutData));
+
+	}
+	
+	private function RenderBoard($layoutData = array())
 	{
 		$room = $this->xo_model->GetRoom($this->login);
 		
@@ -238,20 +249,20 @@ class Xo extends CI_Controller {
 				$viewData['can_move'] = $state == Xo_Model::STATE_CAN_MOVE;
 				$viewData['show_replay_button'] = $state == Xo_Model::STATE_WIN || $state == Xo_Model::STATE_LOSS;
 
-				$extData = array_merge($extraData, array('info' => $movePhrase));
+				$extData = array_merge($layoutData, array('info' => $movePhrase));
 				$this->RenderContent($this->load->view('board_view', $viewData, true), $extData);
 			}
 			elseif (($room->state == 'leaved_by_invitee' && $this->login == $room->inviter_login) ||
 					($room->state == 'leaved_by_inviter' && $this->login == $room->invitee_login))
 			{
-				$extData = array_merge($extraData, array('info' => $this->lang->line('board_rival_left')));
+				$extData = array_merge($layoutData, array('info' => $this->lang->line('board_rival_left')));
 				$this->RenderContent($this->load->view('board_view', $viewData, true), $extData);
 				
 			}
 			elseif ($room->state == 'declined' && $this->login == $room->inviter_login)
 			{
 				$this->xo_model->Decline($this->login);
-				$extData = array_merge($extraData, array('info' => $this->lang->line('invite_declined')));
+				$extData = array_merge($layoutData, array('info' => $this->lang->line('invite_declined')));
 				$this->RenderAwaiting($extData);				
 			}
 			else { $this->RenderAwaiting(); }
@@ -280,7 +291,7 @@ class Xo extends CI_Controller {
 	}
 
 	
-	private function RenderLobby($extraData = array())
+	private function RenderLobby($layoutData = array())
 	{
 		$all_players = $this->xo_model->GetLobby();
 		
@@ -290,7 +301,7 @@ class Xo extends CI_Controller {
 			if ($player->login != $this->login) { $players[] = $player; }
 		}
 		
-		log_message('debug', 'data: '.print_r($extraData, true));
+		log_message('debug', 'data: '.print_r($layoutData, true));
 
 		$viewData = array('login' => $this->login, 'players' => $players, 'invite_url' => $this->locale.$this->invite_url);
 		
@@ -300,7 +311,7 @@ class Xo extends CI_Controller {
 			$viewData['invitee'] = $room->invitee_login;
 		}
 		
-		$this->RenderContent($this->load->view('lobby_view', $viewData, true), $extraData);
+		$this->RenderContent($this->load->view('lobby_view', $viewData, true), $layoutData);
 
 	}
 	
@@ -311,19 +322,20 @@ class Xo extends CI_Controller {
 	
 	private function IsSignedElseRenderSignupView()
 	{
+		$this->LoginByCookies();
+		
 		if (!is_null($this->login))
 		{
 			return true;
 		}
 		else
 		{	
-			$viewData = array('signin_url' => $this->locale.$this->signin_url);
-			$this->RenderContent($this->load->view('login_view', $viewData, true), array('no_update' => true));
+			$this->RenderSignin(array('no_update' => true));
 			return false;
 		}		
 	}
 	
-	private function RenderAwaiting($extraData = array())
+	private function RenderAwaiting($layoutData = array())
 	{
 		if ($this->IsAwaiting() === true)
 		{
@@ -335,15 +347,15 @@ class Xo extends CI_Controller {
 				'message' => $message, 
 				'cancel_url' => $this->locale.$this->invite_cancel_url);
 			
-			$this->RenderContent($this->load->view('awaiting_view', $viewData, true), $extraData);
+			$this->RenderContent($this->load->view('awaiting_view', $viewData, true), $layoutData);
 		}
 		else
 		{
-			$this->RenderAccepting($extraData);
+			$this->RenderAccepting($layoutData);
 		}
 	}
 	
-	private function RenderAccepting($extraData = array())
+	private function RenderAccepting($layoutData = array())
 	{		
 		if ($this->IsAccepting() === true)
 		{
@@ -353,16 +365,16 @@ class Xo extends CI_Controller {
 				'message' => ($this->lang->line('invite_accepting').' '.$room->inviter_login),
 				'accept_url' => $this->locale.$this->invite_accept_url);
 			
-			$this->RenderContent($this->load->view('accept_view', array_merge($viewData), true), $extraData);		
+			$this->RenderContent($this->load->view('accept_view', array_merge($viewData), true), $layoutData);		
 		}
 		else 
 		{
-			$this->RenderLobby($extraData);			
+			$this->RenderLobby($layoutData);			
 		}
 	}
 
 	
-	public function SetCookies($login, $pass)
+	private function SetCookies($login, $pass)
 	{
 		$this->input->set_cookie(array(
 			'name' => 'login',
@@ -377,13 +389,13 @@ class Xo extends CI_Controller {
 			'path' => '/'));
 	}
 	
-	public function Login($login, $hash)
+	private function Login($login, $hash)
 	{		
 		$result = $this->xo_model->Login($login, $hash);
 		
 		if ($result === false)
 		{
-			return $this->lang->line('login_login_error');
+			return false;
 		} 
 		else {
 			
@@ -410,7 +422,7 @@ class Xo extends CI_Controller {
 		}
 	}	
 
-	public function Register($login, $hash)
+	private function Register($login, $hash)
 	{		
 		$result = $this->xo_model->Register($login, $hash);
 		

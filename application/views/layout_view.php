@@ -15,7 +15,7 @@
 	<body style="padding: 50px 0;">
 	
 
-		
+	<?php if (!isset($no_update)):?>	
 	<script type="text/javascript">
 		
 		var timerId = 0;
@@ -39,7 +39,7 @@
 			
 		});	
 	</script>
-
+	<?php endif; ?>
 	
 		<div class="container">
 
