@@ -12,7 +12,7 @@
 			
 			$('a').click(function (e) 
 			{			
-				if ($(this).attr('href') !== '#')
+				if ($(this).attr('href') !== '#' && !$(this).hasClass('noajax'))
 				{				
 					e.preventDefault();
 
