@@ -18,7 +18,7 @@ class Xo extends CI_Controller {
 		parent::__construct();
 		
 		//$this->output->enable_profiler(TRUE);		
-		$this->load->model('xo_model', '', true);		
+		$this->load->model('Xo_Model', '', true);		
 		//$this->model = & $this->xo_model;		
 		$this->load->helper('url');		
 		//$this->LoginByCookies();
