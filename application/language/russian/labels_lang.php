@@ -15,7 +15,7 @@ $lang['login_registration_error'] = 'ошика регистрации или т
 $lang['login_login_error'] = 'неверный пароль или логин';
 
 
-$lang['lobby_invite_error'] = 'ошибка приглашения';
+$lang['lobby_invite_error'] = 'игрок уже находится в игре';
 $lang['lobby_players_list'] = 'Игроки онлайн';
 $lang['lobby_invite_modal_title'] = "Пригласить";
 

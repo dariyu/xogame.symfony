@@ -2,8 +2,6 @@
 	
 	$this->load->helper('url');
 
-	if (isset($no_update)) { echo '<script>clearInterval(timerId);</script>'; }	
-	
 	
 ?>
 	

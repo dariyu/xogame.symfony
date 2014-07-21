@@ -1,4 +1,7 @@
-	<div class="row">		
+<?php $this->load->view('ajax_update_script_view', array('update_url' => $urls['update_url'])); ?>
+<?php $this->load->view('ajax_form_script_view');?>
+
+<div class="row">		
 		<div class="col-lg-4 col-lg-offset-4">					
 			<div class="panel panel-default">
 				<div class="panel-heading">
@@ -14,7 +17,7 @@
 							<div class="list-group-item">
 								
 									
-									<a href="<?php echo ($invite_url.'?invitee='.$player->login); ?>" class="btn btn-primary pull-right">
+									<a href="<?php echo ($urls['invite_url'].'?invitee='.$player->login); ?>" class="btn btn-primary pull-right">
 									 <?php echo $this->lang->line('invite');?>
 									</a>
 								
@@ -30,4 +33,4 @@
 				</div>
 			</div>			
 		</div>
-	</div>
+</div>

@@ -1,13 +1,11 @@
 <?php
 
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
+	$this->load->view('ajax_update_script_view', array('update_url' => $urls['update_url']));
 	$k = 0;	
 ?>
+<?php $this->load->view('ajax_form_script_view');?>
+
+
 
 	<div class="row">		
 		<div class="col-lg-4 col-lg-offset-4">					
@@ -35,7 +33,9 @@
 									
 									if ($can_move)
 									{									
-										echo '<a style="display: block; height: 100%;" href="'.$make_move_url.'?cell='.$k.'&inviter='.$room->inviter_login.'"></a>'; 
+										echo '<a style="display: block; height: 100%;" href="'.
+												$urls['board_make_move_url'].'?cell='.$k.'&inviter='.
+												$room->inviter_login.'"></a>'; 
 									}									
 								}
 								?>
@@ -48,9 +48,9 @@
 				</div>
 				
 				<div class="panel-footer">
-					<a href="<?php echo $leave_url;?>" class="btn btn-primary"><?php echo $this->lang->line('board_leave');?></a>
+					<a href="<?php echo $urls['board_leave_url'];?>" class="btn btn-primary"><?php echo $this->lang->line('board_leave');?></a>
 					<?php if (isset($show_replay_button) && $show_replay_button === true):?>
-					<a href="<?php echo $replay_url;?>" class="btn btn-default"><?php echo $this->lang->line('board_replay');?></a>
+					<a href="<?php echo $urls['board_replay_url'];?>" class="btn btn-default"><?php echo $this->lang->line('board_replay');?></a>
 					<?php endif; ?>
 				</div>
 				

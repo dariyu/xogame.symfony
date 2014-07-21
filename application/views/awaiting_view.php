@@ -1,5 +1,5 @@
-<?php
-?>
+<?php $this->load->view('ajax_update_script_view', array('update_url' => $urls['update_url'])); ?>
+<?php $this->load->view('ajax_form_script_view');?>
 
 	<div class="row">		
 		<div class="col-lg-4 col-lg-offset-4">					
@@ -9,7 +9,7 @@
 					<?php echo $message;?>
 				</div>
 				<div class="panel-footer">
-					<a class="btn btn-primary" href="<?php echo $cancel_url; ?>">
+					<a class="btn btn-primary" href="<?php echo $urls['invite_cancel_url']; ?>">
 							<?php echo $this->lang->line('cancel');?>
 					</a>						
 					

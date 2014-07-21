@@ -26,10 +26,10 @@ class Xo_Model extends CI_Model {
 	{
 		$room = $this->xo_model->GetRoom($login);
 		
-		if (is_array($room->state))
+		if ($room->state == 'playing')
 		{			
 			$this->db->where('inviter_login', $room->inviter_login);
-			return $this->db->update('xo_rooms', array('state' => serialize(array())));
+			return $this->db->update('xo_rooms', array('board' => serialize(array())));
 		} 
 		else { return false; } 
 		
@@ -37,11 +37,17 @@ class Xo_Model extends CI_Model {
 	
 	public function Invite($login, $invitee)
 	{
-		$query = $this->db->get_where('xo_rooms', array('inviter_login' => $login));
-		
-		if (count($query->result()) == 0)
+		$this->db->where(array('invitee_login' => $invitee, 'state' => 'playing'));				
+		$query = $this->db->get('xo_rooms');
+		$result = $query->result();
+	
+		if (count($result) == 0)
 		{
-			$columns = array('inviter_login' => $login, 'invitee_login' => $invitee, 'state' => serialize(null));
+			$columns = array(
+				'inviter_login' => $login, 
+				'invitee_login' => $invitee, 
+				'state' => 'invited');
+			
 			return $this->db->insert('xo_rooms', $columns);			
 		} 
 		else
@@ -65,7 +71,7 @@ class Xo_Model extends CI_Model {
 			$win = true;			
 			foreach ($combo as $cell)
 			{
-				if (!isset($room->state[$cell]) || $room->state[$cell] != 'x') { $win = false; break; }
+				if (!isset($room->board[$cell]) || $room->board[$cell] != 'x') { $win = false; break; }
 			}
 			if ($win) 
 			{
@@ -75,7 +81,7 @@ class Xo_Model extends CI_Model {
 			$win = true;
 			foreach ($combo as $cell)
 			{
-				if (!isset($room->state[$cell]) || $room->state[$cell] != 'o') { $win = false; break; }
+				if (!isset($room->board[$cell]) || $room->board[$cell] != 'o') { $win = false; break; }
 			}
 			if ($win) 
 			{
@@ -83,7 +89,7 @@ class Xo_Model extends CI_Model {
 			}
 		}
 		
-		$isOdd = count($room->state) % 2 == 0;		
+		$isOdd = count($room->board) % 2 == 0;		
 		
 		$canMoveIfInviter = $isOdd && $login == $room->invitee_login;
 		$canMoveIfInvitee = !$isOdd && $login == $room->inviter_login;
@@ -93,7 +99,7 @@ class Xo_Model extends CI_Model {
 	
 	public function Accept($login)
 	{	
-		$data = array('state' => serialize(array()));		
+		$data = array('state' => 'playing', 'board' => serialize(array()));		
 		$this->db->where('invitee_login', $login);
 		return $this->db->update('xo_rooms', $data);
 	}
@@ -104,13 +110,13 @@ class Xo_Model extends CI_Model {
 		
 		if ($room !== false)
 		{		
-			if ($room->state == 'declined')
+			if ($room->board == 'declined')
 			{
 				return $this->db->delete('xo_rooms', array('inviter_login' => $room->inviter_login));
 			}
 			else 
 			{
-				$data = array('state' => serialize('declined'));		
+				$data = array('state' => 'declined');		
 				$this->db->where('invitee_login', $login);
 				return $this->db->update('xo_rooms', $data);
 			}
@@ -144,7 +150,7 @@ class Xo_Model extends CI_Model {
 				$newState = $login == $room->inviter_login ? 'leaved_by_inviter' : 'leaved_by_invitee';
 				
 				$this->db->where('inviter_login', $room->inviter_login);
-				$this->db->update('xo_rooms', array('state' => serialize($newState)));
+				$this->db->update('xo_rooms', array('state' => $newState));
 			}
 			
 			return true;
@@ -162,7 +168,7 @@ class Xo_Model extends CI_Model {
 		if ($query !== false && count($result) > 0)
 		{
 			$room = $result[0];
-			$room->state = unserialize($room->state);
+			$room->board = unserialize($room->board);
 			return $room;
 		}
 		else { return false; }
@@ -176,7 +182,7 @@ class Xo_Model extends CI_Model {
 		if ($query !== false && count($result) > 0)
 		{
 			$room = $query->result()[0];
-			$room->state = unserialize($room->state);
+			$room->board = unserialize($room->board);
 			return $room;
 		}
 		else { return false; }
@@ -184,15 +190,14 @@ class Xo_Model extends CI_Model {
 	}
 
 	public function GetRoomByInvitee($login)
-	{
-		$this->db->where('invitee_login', $login);		
-		$query = $this->db->get('xo_rooms');		
+	{		
+		$query = $this->db->get_where('xo_rooms', array('invitee_login' => $login));		
 		$result = $query->result();
 		
 		if ($query !== false && count($result) > 0)
 		{
 			$room = $query->result()[0];
-			$room->state = unserialize($room->state);
+			$room->board = unserialize($room->board);
 			return $room;
 		}
 		else { return false; }
@@ -215,7 +220,7 @@ class Xo_Model extends CI_Model {
 	public function Register($login, $hash)
 	{		
 		$result = $this->GetUser($login);		
-		return !empty($login) && $result === false && $this->db->insert('xo_users', array('login' => $login, 'hash' => $hash));
+		return !empty($login) && !empty($hash) && $result === false && $this->db->insert('xo_users', array('login' => $login, 'hash' => $hash));
 	}
 	
 	public function Login($login, $pass)
@@ -248,11 +253,11 @@ class Xo_Model extends CI_Model {
 	{			
 		if ($cell !== false && $inviter !== false && ($room = $this->GetRoomByInviter($inviter)) !== false)
 		{			
-			$state = $room->state;
+			$state = $room->board;
 			$state[$cell] = $login == $room->inviter_login ? 'o' : 'x';
 
 			$this->db->where('inviter_login', $room->inviter_login);
-			$this->db->update('xo_rooms', array('state' => serialize($state)));							
+			$this->db->update('xo_rooms', array('board' => serialize($state)));							
 
 			return true;			
 		} 

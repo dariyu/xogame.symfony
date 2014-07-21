@@ -1,11 +1,4 @@
-<?php
-
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-?>
+<?php $this->load->view('ajax_form_script_view');?>
 
 	<div class="container">		
 		<div class="row">		
@@ -14,7 +7,7 @@
 				<div class="panel panel-default">
 					<div class="panel-heading"><h1 class="h1"><?php echo $this->lang->line('login_form_header')?></h1></div>
 					<div class="panel-body">
-						<form class="form" role="form" method="post" action="<?php echo $signin_url;?>">
+						<form class="form" role="form" method="post" action="<?php echo $urls['signin_url'];?>">
 							<div class="form-group">
 								<input type="text" class="form-control" value="<?php echo $this->input->get_post('login'); ?>" name="login" placeholder="<?php echo $this->lang->line('login_login_placeholder');?>"/>
 							</div>

@@ -1,3 +1,5 @@
+<?php $this->load->view('ajax_update_script_view', array('update_url' => $urls['update_url'])); ?>
+<?php $this->load->view('ajax_form_script_view');?>
 
 	<div class="row">		
 		<div class="col-lg-4 col-lg-offset-4">					
@@ -7,7 +9,7 @@
 					<?php echo $message;?>
 				</div>
 				<div class="panel-footer">
-					<form class="form" class="form-horizontal" role="form" method="post" action="<?php echo $accept_url;?>">
+					<form class="form" class="form-horizontal" role="form" method="post" action="<?php echo $urls['invite_accept_url'];?>">
 						<button class="btn btn-primary" type="submit" value="to_accept" name="action">
 							<?php echo $this->lang->line('accept');?>
 						</button>
