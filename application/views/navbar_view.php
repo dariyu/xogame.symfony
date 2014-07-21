@@ -21,10 +21,10 @@
 					<ul class="nav navbar-nav navbar-right">
 						
 						<li class="dropdown">
-							<a href="#" class="dropdown-toggle noajax" data-toggle="dropdown">Language<span class="caret"></span></a>
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Language<span class="caret"></span></a>
 							<ul class="dropdown-menu" role="menu">
-								<li><a href="/ru">Русский</a></li>
-								<li><a href="/en">English</a></li>
+								<li><a href="/ru" class="noajax">Русский</a></li>
+								<li><a href="/en" class="noajax">English</a></li>
 							</ul>
 						</li>
 					</ul>
