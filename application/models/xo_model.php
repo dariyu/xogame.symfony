@@ -7,15 +7,11 @@
  */
 
 class Xo_Model extends CI_Model {
-}
 
-/*
-class Xo_Model extends CI_Model {
-
-//	const STATE_CAN_MOVE = 0;
-//	const STATE_WAIT_MOVE = 1;
-//	const STATE_LOSS = 2;
-//	const STATE_WIN = 3;
+	const STATE_CAN_MOVE = 0;
+	const STATE_WAIT_MOVE = 1;
+	const STATE_LOSS = 2;
+	const STATE_WIN = 3;
 	
 	//$lobby_key = 'xo_lobby';
 	private $updateTime = 120;
@@ -270,4 +266,4 @@ class Xo_Model extends CI_Model {
 		$this->db->delete('xo_lobby');
 	}
 
-}*/	
+}	
