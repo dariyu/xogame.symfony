@@ -7,6 +7,10 @@
  */
 
 class Xo_Model extends CI_Model {
+}
+
+/*
+class Xo_Model extends CI_Model {
 
 //	const STATE_CAN_MOVE = 0;
 //	const STATE_WAIT_MOVE = 1;
@@ -21,7 +25,7 @@ class Xo_Model extends CI_Model {
 		parent::__construct();
 		//$this->cache = new Cache();
 	}
-/*	
+
 	public function Replay($login)
 	{
 		$room = $this->xo_model->GetRoom($login);
@@ -265,5 +269,5 @@ class Xo_Model extends CI_Model {
 		$this->db->where('timestamp <', $threshold);
 		$this->db->delete('xo_lobby');
 	}
-*/	
-}
+
+}*/	
