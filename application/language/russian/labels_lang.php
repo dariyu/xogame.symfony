@@ -16,7 +16,7 @@ $lang['login_login_error'] = 'неверный пароль или логин';
 
 
 $lang['lobby_invite_error'] = 'ошибка приглашения';
-$lang['lobby_players_list'] = 'Список игроков';
+$lang['lobby_players_list'] = 'Игроки онлайн';
 $lang['lobby_invite_modal_title'] = "Пригласить";
 
 
