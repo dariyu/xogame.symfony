@@ -45,8 +45,16 @@
 | the active record class
 */
 
-$active_group = 'default';
+$active_group = 'pdo';
 $active_record = TRUE;
+
+$db['pdo']['hostname'] = 'mysql:host=h56272.srv4.test-hf.ru;dbname=56272_quiz';
+$db['pdo']['username'] = 'h56272_quiz';
+$db['pdo']['password'] = 'Hx7Y181x';
+$db['pdo']['database'] = 'h56272_quiz';
+$db['pdo']['dbdriver'] = 'pdo';
+
+/*
 
 $db['default']['hostname'] = 'h56272.srv4.test-hf.ru';
 $db['default']['username'] = 'h56272_quiz';
@@ -63,7 +71,7 @@ $db['default']['dbcollat'] = 'utf8_general_ci';
 $db['default']['swap_pre'] = '';
 $db['default']['autoinit'] = TRUE;
 $db['default']['stricton'] = FALSE;
-
+*/
 
 /* End of file database.php */
 /* Location: ./application/config/database.php */
