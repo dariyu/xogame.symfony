@@ -1,7 +1,7 @@
 <?php
 	
 	$this->load->helper('url');
-
+	
 ?>
 <!doctype html>
 <html>
@@ -15,7 +15,10 @@
 	</head>
 	<body style="padding: 50px 0;">
 	
-		<div class="container">			
+		<div class="container">
+			
+			<?php $this->load->view('navbar_view', array('login' => $login)); ?>
+			
 			<div id="content">
 				<?php if (isset($error)): ?>
 				<div class="alert alert-danger" role="alert"><strong>Error:</strong> <?php echo $error?></div>	

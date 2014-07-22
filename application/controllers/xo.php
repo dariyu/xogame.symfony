@@ -151,7 +151,7 @@ class Xo extends CI_Controller {
 	{
 		$this->SetLang($lang);
 		
-		$actions = array();		
+		$actions = array();
 		$actions['to_signin'] = function (Xo & $this) {			
 				
 			$auth = $this->GetAuthFromPost();
@@ -179,12 +179,11 @@ class Xo extends CI_Controller {
 		
 		if ($action !== false && key_exists($action, $actions) && ($result = $actions[$action]($this)) !== false)
 		{			
-			$this->RenderBoard();
+			redirect('/');
 		}
 		else
 		{
-			$layoutData = $action !== false ? array('error' => $this->lang->line('login_login_error')) : array();
-			
+			$layoutData = $action !== false ? array('error' => $this->lang->line('login_login_error')) : array();			
 			$this->RenderSignin($layoutData);
 		}		 
 	}
@@ -413,13 +412,14 @@ class Xo extends CI_Controller {
 	
 	public function RenderContent($content, $data = array())
 	{
-		$ajax = $this->input->get_post('ajax', true);				
-		
-		$navbar = $this->load->view('navbar_view', array('login' => $this->login), true);
+		$ajax = $this->input->get_post('ajax', true);		
 		
 		$layout = $ajax == 1 ? 'ajax_layout_view' : 'layout_view';
-		$this->load->view($layout, array_merge($data, 
-				array('content' => $navbar.$content, 'title' => 'Xo Game', 'urls' => $this->localeUrls)));
+		$this->load->view($layout, array_merge($data, array(
+			'login' => $this->login,
+			'content' => $content, 
+			'title' => 'Xo Game', 
+			'urls' => $this->localeUrls)));
 	}
 }
 

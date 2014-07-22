@@ -1,5 +1,3 @@
-<?php $this->load->view('ajax_form_script_view');?>
-
 	<div class="container">		
 		<div class="row">		
 			<div class="col-lg-4 col-lg-offset-4">		
