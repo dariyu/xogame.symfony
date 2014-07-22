@@ -11,6 +11,7 @@ interface IStateHandler {
 	public function HandleWaitMove();
 	public function HandleLoss();
 	public function HandleWin();	
+	public function HandleDraw();
 	
 	//public function HandleDeclined();
 	//public function HandleInvited();
@@ -515,6 +516,7 @@ class Handler implements IStateHandler
 		$this->ctrl->RenderContent($this->ctrl->load->view('board_view', $this->viewData, true), $layoutData);				
 
 	}
+
 	public function HandleLoss()
 	{
 		$this->viewData['can_move'] = false;
@@ -526,6 +528,17 @@ class Handler implements IStateHandler
 		$this->ctrl->RenderContent($this->ctrl->load->view('board_view', $this->viewData, true), $layoutData);				
 	}
 
+	public function HandleDraw()
+	{
+		$this->viewData['can_move'] = false;
+		$this->viewData['show_replay_button'] = true;				
+
+		$layoutData = array_merge($this->layoutData, array(
+			'info' => '<span class="glyphicon glyphicon-thumbs-down"></span> '.$this->ctrl->lang->line('board_draw')));				
+
+		$this->ctrl->RenderContent($this->ctrl->load->view('board_view', $this->viewData, true), $layoutData);				
+	}
+	
 	public function HandleWin()
 	{
 		$this->viewData['can_move'] = false;

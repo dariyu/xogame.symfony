@@ -36,6 +36,7 @@ $lang['invite_accept_error'] = 'ошибка подтверждения';
 $lang['invite_cancel_error'] = 'ошибка отмены приглашения';
 $lang['invite_declined'] = 'Противник отклонил Ваше приглашение';
 
+$lang['board_draw'] = 'Ничья';
 $lang['board_panel_header'] = 'Доска';
 $lang['board_your_move'] = 'Ваш ход';
 $lang['board_rivals_move'] = 'Ход противника';

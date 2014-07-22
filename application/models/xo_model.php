@@ -90,6 +90,9 @@ class Xo_Model extends CI_Model {
 						array(0, 3, 6), array(1, 4, 7), array(2, 5, 8),
 						array(0, 4, 8), array(2, 4, 6));
 		
+		
+		if (count($room->board) >= 9) return $handler->HandleDraw ();
+		
 		foreach ($combos as $combo)
 		{
 			$win = true;			
@@ -201,7 +204,7 @@ class Xo_Model extends CI_Model {
 		}
 		else 
 		{
-			
+			return false;
 		} 
 		
 	}
