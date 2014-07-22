@@ -1,4 +1,4 @@
-			<?php  if ( ! defined('BASEPATH')) { exit('No direct script access allowed'); }
+<?php  if ( ! defined('BASEPATH')) { exit('No direct script access allowed'); }
 
 /* 
  * To change this license header, choose License Headers in Project Properties.
@@ -41,14 +41,14 @@ class Xo_Model extends CI_Model {
 	
 	public function IsAwaiting($login)
 	{	
-		$room = $this->GetRoomByInviter($login);
-		return ($room !== false && $room->inviter_login == $login && $room->state == self::STATE_INVITED) ? true : false;
+		$room = $this->GetInviteRoom($login);
+		return ($room !== false && $room->inviter_login == $login) ? true : false;
 	}
 	
 	public function IsAccepting($login)
 	{
-		$room = $this->GetRoomByInvitee($login);
-		return ($room !== false && $room->invitee_login == $login && $room->state == self::STATE_INVITED) ? true : false;
+		$room = $this->GetInviteRoom($login);
+		return ($room !== false && $room->invitee_login == $login) ? true : false;
 	}
 
 	public function Replay($login)
@@ -119,6 +119,27 @@ class Xo_Model extends CI_Model {
 		$canMoveIfInvitee = !$isOdd && $login == $room->inviter_login;
 		
 		return $canMoveIfInviter || $canMoveIfInvitee ? $handler->HandleCanMove() : $handler->HandleWaitMove();		
+	}
+	
+	public function GetInviteRoom($login)
+	{
+		$this->db->order_by('state', 'asc');
+		$this->db->where("(state=".self::STATE_INVITED." AND (inviter_login='$login' OR invitee_login='$login'))");
+		
+		//$this->db->limit(1);		
+		$result = $this->db->get('xo_rooms')->result();
+		
+		if (count($result) == 0) 
+		{ 
+			return false;			
+		}
+		else
+		{
+			$room = $result[0];
+			$room->board = unserialize($room->board);			
+			return $room;
+		}				
+		
 	}
 	
 	public function GetActiveRoom($login)

@@ -249,67 +249,7 @@ class Xo extends CI_Controller {
 		{
 			$this->RenderAwaiting();
 		}
-	}
-	
-	
-/*	private function RenderBoard($layoutData = array())
-	{
-		$room = $this->xo_model->GetRoom($this->login);
-		
-		log_message('debug', 'RenderBoard::room: '.print_r($room, true));
-		
-		if ($room !== false)
-		{
-			$state = null;
-			
-			$viewData = array(
-				'urls' => $this->localeUrls,
-				'state' => $room->board,
-				'login' => $this->login, 
-				'room' => $room, 
-				'can_move' => false,
-				'show_replay_button' => false);
-			
-			if ($room->state == 'playing' && !is_null($state = $this->xo_model->GetGameState($this->login)))
-			{			
-				$phraseArray = array(
-					Xo_Model::STATE_CAN_MOVE => '<span class="glyphicon glyphicon-circle-arrow-right"></span> '.$this->lang->line('board_your_move'),
-					Xo_Model::STATE_WAIT_MOVE => '<span class="glyphicon glyphicon-time"></span> '.$this->lang->line('board_rivals_move'),
-					Xo_Model::STATE_WIN => '<span class="glyphicon glyphicon-time"></span> '.$this->lang->line('board_win'),
-					Xo_Model::STATE_LOSS => '<span class="glyphicon glyphicon-time"></span> '.$this->lang->line('board_loss')
-				);
-
-				$movePhrase = $phraseArray[$state];
-
-				$viewData['can_move'] = $state == Xo_Model::STATE_CAN_MOVE;
-				$viewData['show_replay_button'] = $state == Xo_Model::STATE_WIN || $state == Xo_Model::STATE_LOSS;
-
-				$layoutData = array_merge($layoutData, array('info' => $movePhrase));
-				$this->RenderContent($this->load->view('board_view', $viewData, true), $layoutData);
-			}
-			elseif (($room->state == 'leaved_by_invitee' && $this->login == $room->inviter_login) ||
-					($room->state == 'leaved_by_inviter' && $this->login == $room->invitee_login))
-			{
-				$extData = array_merge($layoutData, array('info' => $this->lang->line('board_rival_left')));
-				$this->RenderContent($this->load->view('board_view', $viewData, true), $extData);
-				
-			}
-			elseif ($room->state == 'declined' && $this->login == $room->inviter_login)
-			{
-				$this->xo_model->Decline($this->login);
-				$extData = array_merge($layoutData, array('info' => $this->lang->line('invite_declined')));
-				$this->RenderAwaiting($extData);				
-			}
-			else { $this->RenderAwaiting(); }
-			
-		} 
-		else
-		{
-			$this->RenderAwaiting();
-		}
-	}
- */
-	
+	}	
 	
 	private function IsAwaiting()
 	{		
