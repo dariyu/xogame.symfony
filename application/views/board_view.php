@@ -1,7 +1,7 @@
 <?php
 
 	$this->load->view('ajax_update_script_view', array('update_url' => $urls['update_url']));
-	$k = 0;	
+	$k = 0;		
 ?>
 <?php $this->load->view('ajax_form_script_view');?>
 
@@ -24,10 +24,10 @@
 							<?php for ($x = 0; $x < 3; ++ $x):?>
 							<td style="width:50px; height: 50px; font-size: 30px;" class="text-center">
 								<?php 
-								if (isset($state[$k]))
+								if (isset($room->board[$k]))
 								{
-									if ($state[$k] == 'o') { echo '<span class="glyphicon glyphicon-ok-circle"></span>'; }
-									elseif ($state[$k] == 'x') { echo '<span class="glyphicon glyphicon-remove"></span>'; }
+									if ($room->board[$k] == 'o') { echo '<span class="glyphicon glyphicon-ok-circle"></span>'; }
+									elseif ($room->board[$k] == 'x') { echo '<span class="glyphicon glyphicon-remove"></span>'; }
 									
 								} else {
 									

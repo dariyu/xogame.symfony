@@ -1,4 +1,4 @@
-<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+			<?php  if ( ! defined('BASEPATH')) { exit('No direct script access allowed'); }
 
 /* 
  * To change this license header, choose License Headers in Project Properties.
@@ -6,38 +6,66 @@
  * and open the template in the editor.
  */
 
+/*
+class Room {
+	
+	$inviter_login = null;
+	$invitee_login = null;
+	$state = null;
+	$board = null;
+			
+	private function AssignResult($result)
+	{
+		
+	}	
+}
+*/
+
 class Xo_Model extends CI_Model {
 
-	const STATE_CAN_MOVE = 0;
-	const STATE_WAIT_MOVE = 1;
-	const STATE_LOSS = 2;
-	const STATE_WIN = 3;
+	const STATE_PLAYING = 0;	
+	const STATE_LEAVED_BY_INVITER = 100;
+	const STATE_LEAVED_BY_INVITEE = 200;
+	const STATE_INVITED = 300;
+	const STATE_DECLINED = 400;
+	
 	
 	//$lobby_key = 'xo_lobby';
-	private $updateTime = 120;
+	private $updateTime = 30;
 	
 	function __construct()
 	{	
 		parent::__construct();
 		//$this->cache = new Cache();
 	}
+	
+	public function IsAwaiting($login)
+	{	
+		$room = $this->GetRoomByInviter($login);
+		return ($room !== false && $room->inviter_login == $login && $room->state == self::STATE_INVITED) ? true : false;
+	}
+	
+	public function IsAccepting($login)
+	{
+		$room = $this->GetRoomByInvitee($login);
+		return ($room !== false && $room->invitee_login == $login && $room->state == self::STATE_INVITED) ? true : false;
+	}
 
 	public function Replay($login)
 	{
-		$room = $this->xo_model->GetRoom($login);
+		$room = $this->xo_model->GetPlayRoom($login);
 		
-		if ($room->state == 'playing')
+		if ($room !== false)
 		{			
 			$this->db->where('inviter_login', $room->inviter_login);
 			return $this->db->update('xo_rooms', array('board' => serialize(array())));
 		} 
-		else { return false; } 
-		
+		else { return false; }		
 	}
 	
 	public function Invite($login, $invitee)
 	{
-		$this->db->where(array('invitee_login' => $invitee, 'state' => 'playing'));				
+		$this->db->where(array('invitee_login' => $invitee, 'state' => self::STATE_PLAYING));				
 		$query = $this->db->get('xo_rooms');
 		$result = $query->result();
 	
@@ -46,7 +74,7 @@ class Xo_Model extends CI_Model {
 			$columns = array(
 				'inviter_login' => $login, 
 				'invitee_login' => $invitee, 
-				'state' => 'invited');
+				'state' => self::STATE_INVITED);
 			
 			return $this->db->insert('xo_rooms', $columns);			
 		} 
@@ -56,12 +84,8 @@ class Xo_Model extends CI_Model {
 		}	
 	}	
 	
-	public function GetGameState($login)
+	public function HandlePlayState($login, $room, IStateHandler & $handler)
 	{
-		$room = $this->xo_model->GetRoom($login);
-		
-		if ($room === false) { return null; }
-		
 		$combos = array(array(0, 1, 2), array(3, 4, 5), array(6, 7, 8), 
 						array(0, 3, 6), array(1, 4, 7), array(2, 5, 8),
 						array(0, 4, 8), array(2, 4, 6));
@@ -75,7 +99,7 @@ class Xo_Model extends CI_Model {
 			}
 			if ($win) 
 			{
-				return $room->invitee_login == $login ? self::STATE_WIN : self::STATE_LOSS; 
+				return $room->invitee_login == $login ? $handler->HandleWin() : $handler->HandleLoss(); 
 			}
 			
 			$win = true;
@@ -85,7 +109,7 @@ class Xo_Model extends CI_Model {
 			}
 			if ($win) 
 			{
-				return $room->inviter_login == $login ? self::STATE_WIN : self::STATE_LOSS; 				
+				return $room->inviter_login == $login ? $handler->HandleWin() : $handler->HandleLoss(); 				
 			}
 		}
 		
@@ -94,34 +118,70 @@ class Xo_Model extends CI_Model {
 		$canMoveIfInviter = $isOdd && $login == $room->invitee_login;
 		$canMoveIfInvitee = !$isOdd && $login == $room->inviter_login;
 		
-		return $canMoveIfInviter || $canMoveIfInvitee ? self::STATE_CAN_MOVE : self::STATE_WAIT_MOVE;
+		return $canMoveIfInviter || $canMoveIfInvitee ? $handler->HandleCanMove() : $handler->HandleWaitMove();		
+	}
+	
+	public function GetActiveRoom($login)
+	{
+		$this->db->order_by('state', 'asc');
+		$this->db->where(
+				"(state=".self::STATE_PLAYING." AND (inviter_login='$login' OR invitee_login='$login')) OR ".
+				"(state=".self::STATE_LEAVED_BY_INVITER." AND invitee_login='$login') OR ".
+				"(state=".self::STATE_LEAVED_BY_INVITEE." AND inviter_login='$login')");
+		
+		//$this->db->limit(1);		
+		$result = $this->db->get('xo_rooms')->result();
+		
+		if (count($result) == 0) 
+		{ 
+			return false;			
+		}
+		else
+		{
+			$room = $result[0];
+			$room->board = unserialize($room->board);			
+			return $room;
+		}				
+	}
+
+	public function HandleGameState($login, IStateHandler & $handler)
+	{
+		$room = $this->GetActiveRoom($login);
+		
+		if ($room === false) { return false; }
+		
+		$handler->SetRoom($room);
+		
+		switch ($room->state)
+		{
+			case self::STATE_PLAYING: $this->HandlePlayState($login, $room, $handler); break;
+			case self::STATE_LEAVED_BY_INVITER: $handler->HandleLeavedByInviter(); break;
+			case self::STATE_LEAVED_BY_INVITEE: $handler->HandleLeavedByInvitee(); break;
+			default: return false;
+		}
+		
+		return true;
 	}
 	
 	public function Accept($login)
 	{	
-		$data = array('state' => 'playing', 'board' => serialize(array()));		
+		$data = array('state' => self::STATE_PLAYING, 'board' => serialize(array()));		
 		$this->db->where('invitee_login', $login);
 		return $this->db->update('xo_rooms', $data);
 	}
 
 	public function Decline($login)
 	{
-		$room = $this->GetRoom($login);
+		$room = $this->GetRoomByInvitee($login);
 		
 		if ($room !== false)
-		{		
-			if ($room->board == 'declined')
-			{
-				return $this->db->delete('xo_rooms', array('inviter_login' => $room->inviter_login));
-			}
-			else 
-			{
-				$data = array('state' => 'declined');		
-				$this->db->where('invitee_login', $login);
-				return $this->db->update('xo_rooms', $data);
-			}
-		
-		} return false;
+		{
+			return $this->db->delete('xo_rooms', array('id' => $room->id));			
+		}
+		else 
+		{
+			
+		} 
 		
 	}
 	
@@ -132,22 +192,24 @@ class Xo_Model extends CI_Model {
 		{
 			return $this->db->delete('xo_rooms', array('inviter_login' => $login));
 		} 
-		else return false;
+		else { return false; }
 	}
 	
 	public function LeaveRoom($login)
 	{
-		$room = $this->GetRoom($login);
+		$room = $this->GetActiveRoom($login);
+		
 		if ($room !== false)
 		{
-			if (($room->state == 'leaved_by_invitee' && $login == $room->inviter_login) ||
-				($room->state == 'leaved_by_inviter' && $login == $room->invitee_login))
+			if (($room->state == self::STATE_LEAVED_BY_INVITEE && $login == $room->inviter_login) ||
+				($room->state == self::STATE_LEAVED_BY_INVITER && $login == $room->invitee_login))
 			{
 				$this->db->delete('xo_rooms', array('inviter_login' => $room->inviter_login));
 			}			
 			else
 			{
-				$newState = $login == $room->inviter_login ? 'leaved_by_inviter' : 'leaved_by_invitee';
+				$newState = $login == $room->inviter_login ? 
+						self::STATE_LEAVED_BY_INVITER : self::STATE_LEAVED_BY_INVITEE;
 				
 				$this->db->where('inviter_login', $room->inviter_login);
 				$this->db->update('xo_rooms', array('state' => $newState));
@@ -156,6 +218,21 @@ class Xo_Model extends CI_Model {
 			return true;
 		} 
 		else { return false; }
+	}
+	
+	public function GetPlayRoom($login)
+	{
+		$this->db->where("(state=".self::STATE_PLAYING." AND (inviter_login='$login' OR invitee_login='$login'))");
+		$result = $this->db->get('xo_rooms')->result();
+		
+		if ($result !== false && count($result) > 0) 
+		{
+			$room = $result[0];
+			$room->board = unserialize($room->board);
+			return $room;
+		}
+		
+		return false;		
 	}
 	
 	public function GetRoom($login)
@@ -250,8 +327,10 @@ class Xo_Model extends CI_Model {
 	}
 	
 	public function WriteMove($login, $inviter, $cell)
-	{			
-		if ($cell !== false && $inviter !== false && ($room = $this->GetRoomByInviter($inviter)) !== false)
+	{
+		$room = $this->GetPlayRoom($login);
+		
+		if ($room !== false && $cell !== false && $inviter !== false)
 		{			
 			$state = $room->board;
 			$state[$cell] = $login == $room->inviter_login ? 'o' : 'x';

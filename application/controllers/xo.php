@@ -1,15 +1,29 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-error_reporting(E_ALL);
-ini_set("display_errors", 1);
+interface IStateHandler {
+	
+	public function SetRoom(& $room);
+	
+	public function HandleError();	
+	public function HandleLeavedByInviter();
+	public function HandleLeavedByInvitee();
+	public function HandleCanMove();
+	public function HandleWaitMove();
+	public function HandleLoss();
+	public function HandleWin();	
+	
+	//public function HandleDeclined();
+	//public function HandleInvited();
 
-//error_log('message');
+}
+
 
 class Xo extends CI_Controller {
 	
-	private $login = null;
-	private $urls = array();
-	private $localeUrls = array();	
+	public $localeUrls = array();	
+	public $login = null;
+	
+	private $urls = array();	
 	private $locale = '/ru';
 
 	public function __construct() {
@@ -183,7 +197,7 @@ class Xo extends CI_Controller {
 			$inviter = $this->input->get_post('inviter', true);
 			$cell = $this->input->get_post('cell', true);
 		
-			if ($this->IsMyMove() === true && $this->xo_model->WriteMove($this->login, $inviter, $cell) !== false) 
+			if ($this->xo_model->WriteMove($this->login, $inviter, $cell) !== false) 
 			{				
 				$this->RenderBoard();
 			}
@@ -211,8 +225,8 @@ class Xo extends CI_Controller {
 		if ($this->IsSignedElseRenderSignupView())
 		{
 			$result = $this->xo_model->Replay($this->login);
-			$layoutData = array();
 			
+			$layoutData = array();
 			if ($result !== true)
 			{
 				$layoutData['error'] = $this->lang->line('board_replay_error');
@@ -229,7 +243,16 @@ class Xo extends CI_Controller {
 
 	}
 	
-	private function RenderBoard($layoutData = array())
+	public function RenderBoard($layoutData = array())
+	{		
+		if ($this->xo_model->HandleGameState($this->login, new Handler($this->login, $this, $layoutData)) === false)		
+		{
+			$this->RenderAwaiting();
+		}
+	}
+	
+	
+/*	private function RenderBoard($layoutData = array())
 	{
 		$room = $this->xo_model->GetRoom($this->login);
 		
@@ -285,25 +308,21 @@ class Xo extends CI_Controller {
 			$this->RenderAwaiting();
 		}
 	}
+ */
 	
 	
 	private function IsAwaiting()
 	{		
-		$room = $this->xo_model->GetRoomByInviter($this->login);		
-		
-		log_message('debug', 'IsAwaiting::room: '.print_r($room, true));
-		
-		return ($room !== false && $room->inviter_login == $this->login && $room->state == 'invited') ? true : false;
+		return $this->xo_model->IsAwaiting($this->login);
 	}
 	
 	private function IsAccepting()
 	{
-		$room = $this->xo_model->GetRoomByInvitee($this->login);	
-		return ($room !== false && $room->invitee_login == $this->login && $room->state == 'invited') ? true : false;
+		return $this->xo_model->IsAccepting($this->login);
 	}
 
 	
-	private function RenderLobby($layoutData = array())
+	public function RenderLobby($layoutData = array())
 	{
 		$all_players = $this->xo_model->GetLobby();
 		
@@ -330,11 +349,6 @@ class Xo extends CI_Controller {
 
 	}
 	
-	private function IsMyMove()
-	{
-		return $this->xo_model->GetGameState($this->login) == Xo_Model::STATE_CAN_MOVE;
-	}
-	
 	private function IsSignedElseRenderSignupView()
 	{
 		$this->LoginByCookies();
@@ -350,7 +364,7 @@ class Xo extends CI_Controller {
 		}		
 	}
 	
-	private function RenderAwaiting($layoutData = array())
+	public function RenderAwaiting($layoutData = array())
 	{
 		if ($this->IsAwaiting() === true)
 		{
@@ -370,11 +384,11 @@ class Xo extends CI_Controller {
 		}
 	}
 	
-	private function RenderAccepting($layoutData = array())
+	public function RenderAccepting($layoutData = array())
 	{		
 		if ($this->IsAccepting() === true)
 		{
-			$room = $this->xo_model->GetRoom($this->login);
+			$room = $this->xo_model->GetRoomByInvitee($this->login);
 			$viewData = array(
 				'urls' => $this->localeUrls,
 				'login' => $this->login, 
@@ -456,7 +470,7 @@ class Xo extends CI_Controller {
 
 	}
 	
-	private function RenderContent($content, $data = array())
+	public function RenderContent($content, $data = array())
 	{
 		$ajax = $this->input->get_post('ajax', true);				
 		
@@ -466,6 +480,121 @@ class Xo extends CI_Controller {
 		$this->load->view($layout, array_merge($data, 
 				array('content' => $navbar.$content, 'title' => 'Xo Game', 'urls' => $this->localeUrls)));
 	}
-	
+}
+
+
+class Handler implements IStateHandler
+{			
+	private $room = null;
+	private $login = null;
+	private $ctrl = null;
+	private $layoutData = null;
+	private $viewData = null;
+
+	function __construct($login, Xo & $ctrl, $layoutData)
+	{
+		$this->login = $login;
+		$this->ctrl = $ctrl;
+		$this->layoutData = $layoutData;
+
+		$this->viewData = array(
+			'urls' => $this->ctrl->localeUrls,					
+			'login' => $this->login,					
+			'can_move' => false,
+			'show_replay_button' => false);
+
+	}
+
+	public function SetRoom(& $room) { $this->room = $room; $this->viewData['room'] = $room; }
+
+	public function HandleInvited()
+	{
+		$this->ctrl->RenderAwaiting();
+	}
+
+	public function HandleError()
+	{
+		$this->ctrl->RenderAwaiting();
+	}
+
+	public function HandleDeclined()
+	{				
+		$this->ctrl->xo_model->Decline($this->login);
+		$extData = array_merge($this->layoutData, array('info' => $this->ctrl->lang->line('invite_declined')));
+		$this->ctrl->RenderAwaiting($extData);
+	}
+
+	public function HandleLeavedByInviter()
+	{
+		if ($this->login == $this->room->invitee_login)
+		{				
+			$extData = array_merge($this->layoutData, array('info' => $this->ctrl->lang->line('board_rival_left')));
+			
+			$viewData = $this->viewData;
+			$viewData['state'] = $this->room->board;
+			$this->ctrl->RenderContent($this->ctrl->load->view('board_view', $viewData, true), $extData);
+		} else
+		{
+			$this->ctrl->RenderAwaiting($this->layoutData);
+		}
+	}
+
+	public function HandleLeavedByInvitee()
+	{
+		if ($this->login == $this->room->inviter_login)
+		{				
+			$extData = array_merge($this->layoutData, array('info' => $this->ctrl->lang->line('board_rival_left')));					
+			
+			$viewData = $this->viewData;
+			$viewData['state'] = $this->room->board;
+			$this->ctrl->RenderContent($this->ctrl->load->view('board_view', $viewData, true), $extData);
+		}
+		else
+		{
+			$this->ctrl->RenderAwaiting($this->layoutData);
+		}
+	}
+
+	public function HandleCanMove()
+	{
+		$this->viewData['can_move'] = true;
+
+		$layoutData = array_merge($this->layoutData, array(
+			'info' => '<span class="glyphicon glyphicon-circle-arrow-right"></span> '.$this->ctrl->lang->line('board_your_move')));
+
+		$this->ctrl->RenderContent($this->ctrl->load->view('board_view', $this->viewData, true), $layoutData);				
+	}
+
+	public function HandleWaitMove()
+	{
+		$this->viewData['can_move'] = false;
+
+		$layoutData = array_merge($this->layoutData, array(
+			'info' => '<span class="glyphicon glyphicon-time"></span> '.$this->ctrl->lang->line('board_rivals_move')));
+
+		$this->ctrl->RenderContent($this->ctrl->load->view('board_view', $this->viewData, true), $layoutData);				
+
+	}
+	public function HandleLoss()
+	{
+		$this->viewData['can_move'] = false;
+		$this->viewData['show_replay_button'] = true;				
+
+		$layoutData = array_merge($this->layoutData, array(
+			'info' => '<span class="glyphicon glyphicon-thumbs-down"></span> '.$this->ctrl->lang->line('board_loss')));				
+
+		$this->ctrl->RenderContent($this->ctrl->load->view('board_view', $this->viewData, true), $layoutData);				
+	}
+
+	public function HandleWin()
+	{
+		$this->viewData['can_move'] = false;
+		$this->viewData['show_replay_button'] = true;
+
+		$layoutData = array_merge($this->layoutData, array(
+			'info' => '<span class="glyphicon glyphicon-flag"></span> '.$this->ctrl->lang->line('board_win')));
+
+		$this->ctrl->RenderContent($this->ctrl->load->view('board_view', $this->viewData, true), $layoutData);				
+	}
 
 }
