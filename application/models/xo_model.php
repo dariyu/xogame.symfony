@@ -197,7 +197,7 @@ class Xo_Model extends CI_Model {
 		
 		if ($room !== false)
 		{
-			return $this->db->delete('xo_rooms', array('id' => $room->id));			
+			return $this->db->delete('xo_rooms', array('inviter_login' => $room->inviter_login));			
 		}
 		else 
 		{
