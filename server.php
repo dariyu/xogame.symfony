@@ -1,8 +1,5 @@
 <?php 
 
-echo 'ok';
-
-/*
 
 try {
 	
