@@ -1,26 +1,5 @@
 <?php  if ( ! defined('BASEPATH')) { exit('No direct script access allowed'); }
 
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
-class Room {
-	
-	$inviter_login = null;
-	$invitee_login = null;
-	$state = null;
-	$board = null;
-			
-	private function AssignResult($result)
-	{
-		
-	}	
-}
-*/
-
 class Xo_Model extends CI_Model {
 
 	const STATE_PLAYING = 0;	
@@ -86,12 +65,11 @@ class Xo_Model extends CI_Model {
 	
 	public function HandlePlayState($login, $room, IStateHandler & $handler)
 	{
+		if (count($room->board) >= 9) return $handler->HandleDraw ();
+		
 		$combos = array(array(0, 1, 2), array(3, 4, 5), array(6, 7, 8), 
 						array(0, 3, 6), array(1, 4, 7), array(2, 5, 8),
-						array(0, 4, 8), array(2, 4, 6));
-		
-		
-		if (count($room->board) >= 9) return $handler->HandleDraw ();
+						array(0, 4, 8), array(2, 4, 6));	
 		
 		foreach ($combos as $combo)
 		{

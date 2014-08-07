@@ -2,6 +2,10 @@
 
 interface IStateHandler {
 	
+	/**
+	 * 
+	 * @param type $room
+	 */
 	public function SetRoom(& $room);
 	
 	public function HandleError();	
