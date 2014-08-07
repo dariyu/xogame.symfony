@@ -50,7 +50,7 @@ try {
 	
 } catch(Exception $ex)
 {
-	echo 'exception: '.$ex->getMessage();
+	error_log( 'exception: '.$ex->getMessage());
 }
 
 socket_close($socket);
