@@ -14,8 +14,7 @@ class Serv implements MessageComponentInterface {
 
     public function onMessage(ConnectionInterface $from, $msg) {
 		
-		error_log('ratchet message');
-	
+		error_log('ratchet message');	
     }
 
     public function onClose(ConnectionInterface $conn) {
