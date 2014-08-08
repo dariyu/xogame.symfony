@@ -1,11 +1,39 @@
 <?php
+
+/*
+require dirname(__FILE__ ). '/Ratchet/MessageComponentInterface.php';
+require dirname(__FILE__ ). '/ratchet/http/httpserverinterface.php';
+
+
+require dirname(__FILE__ ). '/ratchet/server/ioserver.php';
+require dirname(__FILE__ ). '/ratchet/websocket/wsserver.php';
+
+require dirname(__FILE__ ). '/ratchet/connectioninterface.php';
+*/
+
+//require dirname(__FILE__ ).'/classloader.php';
+
+
+
+require dirname(__DIR__) . '/codeigniter/vendor/autoload.php';
+
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
+use Ratchet\Http\HttpServer;
 
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+/*
+$loader = new \Composer\Autoload\ClassLoader();
+
+//register classes with namespaces
+$loader->add('Ratchet', __DIR__.'/src');
+$loader->add('React', __DIR__.'/src');
+
+// activate the autoloader
+$loader->register();
+*/
 
 
 class Serv implements MessageComponentInterface {
@@ -24,6 +52,6 @@ class Serv implements MessageComponentInterface {
     }
 }
 
-$server = IoServer::factory(new WsServer(new Serv()), 8080);
+$server = IoServer::factory(new HttpServer(new WsServer(new Serv())), 8080);
 
 $server->run();
