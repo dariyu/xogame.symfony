@@ -52,6 +52,6 @@ class Serv implements MessageComponentInterface {
     }
 }
 
-$server = IoServer::factory(new HttpServer(new WsServer(new Serv())), 8080);
+$server = IoServer::factory(new HttpServer(new WsServer(new Serv())), 80);
 
 $server->run();
