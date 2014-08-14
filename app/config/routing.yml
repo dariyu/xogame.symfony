@@ -1,0 +1,2 @@
+_xo_game:
+    resource: "@XoGameBundle/Resources/config/routing.yml"

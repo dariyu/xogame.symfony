@@ -1,0 +1,59 @@
+start:
+    path:     /
+    defaults: { _controller:  XoGameBundle:Front:index }
+
+main:
+    path: /{locale}
+    defaults: { _controller: XoGameBundle:Front:main }
+
+signin:
+    path: /{locale}/signin
+    defaults: { _controller: XoGameBundle:Front:signin }
+    
+signup:
+    path: /{locale}/signup
+    defaults: { _controller: XoGameBundle:Front:signup }
+
+invite:
+    path: /{locale}/invite
+    defaults: { _controller: XoGameBundle:Front:invite }
+
+cancel:
+    path: /{locale}/cancel
+    defaults: { _controller: XoGameBundle:Front:cancel }
+
+accept:
+    path: /{locale}/accept
+    defaults: { _controller: XoGameBundle:Front:accept }
+
+decline:
+    path: /{locale}/decline
+    defaults: { _controller: XoGameBundle:Front:decline }
+
+keepalive:
+    path: /{locale}/keepalive
+    defaults: { _controller: XoGameBundle:Front:keepalive }
+
+makemove:
+    path: /{locale}/makemove
+    defaults: { _controller: XoGameBundle:Front:makemove }
+
+leave:
+    path: /{locale}/leave
+    defaults: { _controller: XoGameBundle:Front:leave }
+
+replay:
+    path: /{locale}/replay
+    defaults: { _controller: XoGameBundle:Front:replay }
+
+accept_replay:
+    path: /{locale}/accept_replay
+    defaults: { _controller: XoGameBundle:Front:acceptReplay }
+
+signout:
+    path: /{locale}/signout
+    defaults: { _controller: XoGameBundle:Front:signout }
+
+quit_lobby:
+    path: /{locale}/quit_lobby
+    defaults: { _controller: XoGameBundle:Front:quitLobby }

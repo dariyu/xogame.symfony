@@ -1,0 +1,17 @@
+## YAML Template.
+Xo\GameBundle\Entity\Room:
+    type: entity
+    table: xo_rooms
+    id:
+        inviter_login:
+            type: string
+            length: 64
+            generator: { strategy: NONE }
+    fields:
+        invitee_login:
+            type: string
+            length: 64
+        state:
+            type: integer
+        board:
+            type: object

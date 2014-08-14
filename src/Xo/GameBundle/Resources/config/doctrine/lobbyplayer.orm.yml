@@ -1,0 +1,13 @@
+## YAML Template.
+Xo\GameBundle\Entity\LobbyPlayer:
+    type: entity
+    table: xo_lobby
+    id:
+        login:
+            type: string
+            length: 64
+            generator: { strategy: NONE }
+    fields:
+        timestamp:
+            type: integer
+            
