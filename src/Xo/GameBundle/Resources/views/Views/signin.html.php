@@ -61,6 +61,20 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 				} 	
 				
 			};
+			
+			var submitHandler = function(form) {
+					
+				loaderIn();
+
+				$(form).ajaxSubmit({
+
+					 success: function(data) {						
+
+					   handleSuccess(data);
+					 },
+					 complete: function () { loaderOut(); }
+				 });
+			};
 
 			$('#signin').validate($.extend({
 
@@ -78,19 +92,7 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 					}
 				},
 					
-				submitHandler: function(form) {
-					
-					loaderIn();
-					
-					$(form).ajaxSubmit({
-
-						 success: function(data) {						
-
-						   handleSuccess(data);
-						 },
-						 complete: function (data) { loaderOut(); }
-					 });
-				}
+				submitHandler: submitHandler
 					
 				
 			}, shared_settings));
@@ -132,17 +134,7 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 					}
 				},
 				
-				submitHandler: function(form) {
-					
-					$(form).ajaxSubmit({
-
-						 success: function(data) {
-
-						   handleSuccess(data);
-
-						 }
-					 });
-				}
+				submitHandler: submitHandler
 
 			}, shared_settings)); 
   

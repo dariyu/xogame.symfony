@@ -279,7 +279,7 @@ class FrontController extends \Symfony\Bundle\FrameworkBundle\Controller\Control
 	{		
 		try {
 			
-			$this->Init($locale, $request);	
+			$this->Init($locale, $request);
 			
 		} catch (\Exception $ex) {
 
@@ -297,19 +297,16 @@ class FrontController extends \Symfony\Bundle\FrameworkBundle\Controller\Control
 			
 			$this->Init($locale, $request);
 			$login = $request->get('login');
-			$hash = $this->toHash($request->get('password'));		
-			
+			$hash = $this->toHash($request->get('password'));			
 			
 			if ($this->model->Signup($login, $hash) === true)
 			{
 				$this->SetCookies($login, $hash);			
 				$this->PostMessage('info', $this->lang->SignupSuccess());
-				
-				$response = $this->HandleLobby();
-			}
-			else
-			{
-				$this->PostMessage('error', $this->lang->ErrorSignup());
+
+				$response = new \stdClass();
+				$response->html = $this->model->HandleState($this);
+				$response->login = $login;
 			}
 			
 		} catch (\Exception $ex) {
