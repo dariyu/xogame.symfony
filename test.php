@@ -1,1 +1,0 @@
-<?php error_log('test'); echo 'test';
