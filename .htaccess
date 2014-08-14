@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 DirectoryIndex web/app.php
 #DirectoryIndex web/app_dev.php
 
@@ -51,8 +50,3 @@ DirectoryIndex web/app.php
         # RedirectTemp cannot be used instead
     </IfModule>
 </IfModule>
-=======
-#RewriteEngine on
-#RewriteCond $1 !^(index\.php|assets|robots\.txt)
-#RewriteRule ^(.*)$ /index.php/$1 [L]
->>>>>>> 139cdee8f795f169bca153b9ac4977fc8b4b2742
