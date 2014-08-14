@@ -124,44 +124,42 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 </div>
 
 <div class="col-lg-4 col-lg-offset-4">			
-	<div id="content">
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h1 class="h1">
-				<?php echo $lang->BoardHeader(); ?>
-				</h1>
-			</div>
-			<div class="panel-body">					
-				<table class="table-bordered" style="width: 150px; height: 150px; margin: auto;">
-					<?php for ($y = 0; $y < 3; ++ $y):?>
-					<tr>
-						<?php for ($x = 0; $x < 3; ++ $x):?>
-						<td id="cell-<?php echo $k?>" style="font-size: 30px; width: 33%; height: 33%;" class="text-center">
-							<?php 
-							if (isset($board[$k]))
-							{
-								if ($board[$k] == 'o') { echo '<span class="glyphicon glyphicon-ok-circle"></span>'; }
-								elseif ($board[$k] == 'x') { echo '<span class="glyphicon glyphicon-remove"></span>'; }
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h1 class="h1">
+			<?php echo $lang->BoardHeader(); ?>
+			</h1>
+		</div>
+		<div class="panel-body">					
+			<table class="table-bordered" style="width: 150px; height: 150px; margin: auto;">
+				<?php for ($y = 0; $y < 3; ++ $y):?>
+				<tr>
+					<?php for ($x = 0; $x < 3; ++ $x):?>
+					<td id="cell-<?php echo $k?>" style="font-size: 30px; width: 33%; height: 33%;" class="text-center">
+						<?php 
+						if (isset($board[$k]))
+						{
+							if ($board[$k] == 'o') { echo '<span class="glyphicon glyphicon-ok-circle"></span>'; }
+							elseif ($board[$k] == 'x') { echo '<span class="glyphicon glyphicon-remove"></span>'; }
 
-							} else {
+						} else {
 
-								echo '<a class="make-move" style="display: block; height: 100%;" href="'.
-										$make_move_url.'?cell='.$k.'"></a>';
-							}
-							?>
-						</td>
-						<?php ++$k; endfor;?>
-					</tr>
-					<?php endfor?>
-				</table>
-			</div>
+							echo '<a class="make-move" style="display: block; height: 100%;" href="'.
+									$make_move_url.'?cell='.$k.'"></a>';
+						}
+						?>
+					</td>
+					<?php ++$k; endfor;?>
+				</tr>
+				<?php endfor?>
+			</table>
+		</div>
 
-			<div class="panel-footer">
-				<a id="leave-btn" href="<?php echo $leave_url;?>" class="btn btn-primary"><?php echo $lang->BoardLeave();?></a>					
-				<a id="replay-btn" href="<?php echo $replay_url;?>" class="btn btn-default <?php echo $replay_btn_class?>"><?php echo $lang->BoardReplay();?></a>
-			</div>				
-		</div>	
-	</div>
+		<div class="panel-footer">
+			<a id="leave-btn" href="<?php echo $leave_url;?>" class="btn btn-primary"><?php echo $lang->BoardLeave();?></a>					
+			<a id="replay-btn" href="<?php echo $replay_url;?>" class="btn btn-default <?php echo $replay_btn_class?>"><?php echo $lang->BoardReplay();?></a>
+		</div>				
+	</div>	
 </div>
 <?php } 
 

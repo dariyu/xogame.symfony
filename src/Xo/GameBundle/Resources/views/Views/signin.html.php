@@ -151,87 +151,86 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 	</script>
 	
 
-<div class="row">
-	<div class="col-lg-5 col-lg-offset-1">
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h1 class="h1">
-				<?php echo $lang->SigninFormHeader(); ?>
-				</h1>
-			</div>
-			<div class="panel-body">
-				<form id="signin" class="form" role="form" method="post" action="<?php echo $action_signin_url?>">
-					<div class="form-group">
-						<input 
-							type="text" 
-							class="form-control" 
-							value="<?php echo $login ?>" 
-							name="login" 
-							placeholder="<?php echo $lang->LoginPlaceholder();?>"/>
-					</div>
-					<div class="form-group">
-						<input 
-							type="password" 
-							class="form-control" 
-							name="password" 
-							placeholder="<?php echo $lang->PasswordPlaceholder();?>"/>
-					</div>
-					<button 
-						class="btn btn-primary" 
-						type="submit" 
-						value="to_signin" 
-						name="action">
-							<?php echo $lang->Signin();?>
-					</button>
-				</form>			
-			</div>
+<div class="col-lg-5 col-lg-offset-1">
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h1 class="h1">
+			<?php echo $lang->SigninFormHeader(); ?>
+			</h1>
+		</div>
+		<div class="panel-body">
+			<form id="signin" class="form" role="form" method="post" action="<?php echo $action_signin_url?>">
+				<div class="form-group">
+					<input 
+						type="text" 
+						class="form-control" 
+						value="<?php echo $login ?>" 
+						name="login" 
+						placeholder="<?php echo $lang->LoginPlaceholder();?>"/>
+				</div>
+				<div class="form-group">
+					<input 
+						type="password" 
+						class="form-control" 
+						name="password" 
+						placeholder="<?php echo $lang->PasswordPlaceholder();?>"/>
+				</div>
+				<button 
+					class="btn btn-primary" 
+					type="submit" 
+					value="to_signin" 
+					name="action">
+						<?php echo $lang->Signin();?>
+				</button>
+			</form>			
 		</div>
 	</div>
-	<div class="col-lg-5">
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h1 class="h1">
-				<?php echo $lang->SignupFormHeader(); ?>
-				</h1>
-			</div>
-			<div class="panel-body">
-				<form id="signup" class="form" role="form" method="post" action="<?php echo $action_signup_url?>">
-					<div class="form-group">
-						<input 
-							type="text" 
-							class="form-control" 
-							value="<?php echo $login ?>" 
-							name="login" 
-							placeholder="<?php echo $lang->LoginPlaceholder();?>"/>
-					</div>
-					<div class="form-group">
-						<input
-							id="password"
-							type="password" 
-							class="form-control" 
-							name="password" 
-							placeholder="<?php echo $lang->PasswordPlaceholder();?>"/>
-					</div>
-					<div class="form-group">
-						<input
-							id="password-confirm"
-							type="password" 
-							class="form-control onkeyup" 
-							name="password_confirm" 
-							placeholder="<?php echo $lang->PasswordPlaceholderConfirm() ?>"/>
-					</div>
+</div>
+<div class="col-lg-5">
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h1 class="h1">
+			<?php echo $lang->SignupFormHeader(); ?>
+			</h1>
+		</div>
+		<div class="panel-body">
+			<form id="signup" class="form" role="form" method="post" action="<?php echo $action_signup_url?>">
+				<div class="form-group">
+					<input 
+						type="text" 
+						class="form-control" 
+						value="<?php echo $login ?>" 
+						name="login" 
+						placeholder="<?php echo $lang->LoginPlaceholder();?>"/>
+				</div>
+				<div class="form-group">
+					<input
+						id="password"
+						type="password" 
+						class="form-control" 
+						name="password" 
+						placeholder="<?php echo $lang->PasswordPlaceholder();?>"/>
+				</div>
+				<div class="form-group">
+					<input
+						id="password-confirm"
+						type="password" 
+						class="form-control onkeyup" 
+						name="password_confirm" 
+						placeholder="<?php echo $lang->PasswordPlaceholderConfirm() ?>"/>
+				</div>
 
-					<button 
-						class="btn btn-primary" 
-						type="submit" 
-						value="to_signin" 
-						name="action">
-							<?php echo $lang->Signup();?>
-					</button>
-				</form>			
-			</div>
+				<button 
+					class="btn btn-primary" 
+					type="submit" 
+					value="to_signin" 
+					name="action">
+						<?php echo $lang->Signup();?>
+				</button>
+			</form>			
 		</div>
 	</div>
+</div>
 
 <?php } 
 
