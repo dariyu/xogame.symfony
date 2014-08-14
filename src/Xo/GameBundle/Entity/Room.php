@@ -102,7 +102,7 @@ class Room {
 		
 		if (count($this->board) >= 9)
 		{			
-			return new RoomState($this->board, false, true, $lang->BoardDraw()); 
+			return new RoomState($this->board, false, true, $this->invitee_login === $login ? 'x' : 'o', $lang->BoardDraw()); 
 		}
 		
 		$combos = array(array(0, 1, 2), array(3, 4, 5), array(6, 7, 8), 

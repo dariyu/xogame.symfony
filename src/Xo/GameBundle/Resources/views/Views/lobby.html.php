@@ -153,12 +153,13 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 
 		$("#accept-btn").click(function (e) {			
 			e.preventDefault();
+			clearInterval(keepalive);
 			getContent($(this).attr('href'));			
 			hideAcceptModal();			
 		});
 
 		$("#decline-btn").click(function (e) {			
-			e.preventDefault();
+			e.preventDefault();			
 			send($(this).attr('href'));			
 			hideAcceptModal();			
 		});
