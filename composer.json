@@ -8,7 +8,7 @@
     },
     "require": {
         "php": ">=5.3.3",
-		"apcu": "*",
+		"ext-apcu": "*",
 		"ext-intl": "*",
 		"sensio/generator-bundle": "~2.3",
 		"symfony/symfony": "2.5.*",
