@@ -179,7 +179,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 		
 		keepalive = setInterval(function () {
 			
-			send('<?php echo $keepalive_url?>');
+			send('<?php echo $keepalive_url?>', false);
 			
 		}, 60000);
 				

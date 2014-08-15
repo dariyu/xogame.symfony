@@ -26,8 +26,6 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		
 		move: function (data) {
 			
-			console.log(data.cell);
-			
 			$('.make-move').hide();
 			$('#cell-'+data.cell).html('<?php printToken($token)?>');			
 			if (data.state.canReplay) $('#replay-btn').removeClass('hidden');
@@ -43,12 +41,19 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 				
 		replay: function (data) {
 			
-			$('#replay-modal').modal();			
+			$('#replay-modal').modal();	
 		},
 				
 		accept_replay: function (data)
 		{
+			$('#accept-modal').modal('hide');
 			getContent('<?php echo $main_url?>');
+		},
+				
+		leave_game: function (data)
+		{
+			$('#accept-modal').modal('hide');
+			$('#replay-btn').hide();			
 		}
 		
 	};
@@ -62,18 +67,29 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		
 		$('#leave-btn, #modal-leave-btn').click(function (e) {
 			e.preventDefault();
-			$('#replay-modal').modal('hide');
+			$('#replay-modal').data('prevent-leave', true).modal('hide');
 			getContent('<?php echo $leave_url ?>');
+		});
+		
+		$('#replay-modal').on('hide.bs.modal', function (e) {
+			
+			if ($(this).data('prevent-leave') !== true)
+			{
+				getContent('<?php echo $leave_url ?>');
+			}
+			
+			$(this).data('prevent-leave', false);
 		});
 		
 		$('#replay-btn').click(function (e) {			
 			e.preventDefault();
+			$('#accept-modal').modal();
 			send($(this).attr('href'));			
 		});
 		
 		$('#modal-accept-btn').click(function (e) {			
 			e.preventDefault();
-			$('#replay-modal').modal('hide');
+			$('#replay-modal').data('prevent-leave', true).modal('hide');
 			getContent('<?php echo $accept_replay_url; ?>');
 		});
 		
@@ -98,8 +114,6 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 			
 			return '';			
 		});
-        		
-
 		
 	});
 
@@ -122,6 +136,21 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 	  </div>
 	</div>
 </div>
+
+<div class="modal fade" id="accept-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+		  <h4 class="modal-title" id="myModalLabel"><?php echo $lang->BoardReplayAcceptModalHeader()?></h4>
+		</div>
+		<div class="modal-body">
+			<?php echo $lang->BoardReplayAcceptModalBody()?>
+		</div>
+	  </div>
+	</div>
+</div>
+
 
 <div class="col-lg-4 col-lg-offset-4">			
 	<div class="panel panel-default">

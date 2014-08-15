@@ -3,6 +3,14 @@
 namespace Xo\GameBundle\Model;
 
 class EngLang implements \Xo\GameBundle\Abstraction\ILanguage {
+
+	public function BoardReplayAcceptModalBody() {
+		return 'Awaiting accept';
+	}	
+	
+	public function BoardReplayAcceptModalHeader() {
+		return 'Awaiting';
+	}
 	
 	public function Signout() {
 		return 'Signout';

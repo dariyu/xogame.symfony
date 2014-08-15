@@ -2,12 +2,14 @@
 
 	var fadeMessage = function ($element)
 	{
-		var fadeTimerId = setTimeout(function () { 
-
-			$element.fadeOut(10000, function () { });
+		$element.fadeOut(10000, function () { });
+			
+		
+/*		var fadeTimerId = setTimeout(function () { 
+			
 			clearTimeout(fadeTimerId);
 
-		}, 3000);
+		}, 3000);*/
 	};
 
 	var showMessage = function ($element, body)
@@ -73,9 +75,10 @@
 		$('#loader').fadeOut();
 	};
 
-	var send = function(url) {
+	var send = function(url, loader) {
 
-		loaderIn();
+		var hasLoader = (typeof loader !== 'undefined') ? loader : true;
+		if (hasLoader) loaderIn();
 
 		$.ajax(url, {
 
@@ -84,16 +87,17 @@
 				handleMessages(data.messages); 
 				if (typeof data.response !== 'undefined') handleNotify(data.response);				
 			},
-			complete: function (data) { loaderOut(); },
+			complete: function (data) { if (hasLoader) loaderOut(); },
 			error: errorMsg
 		});
 
 	};
 	
-	var getContent = function (url) {			
-		
-		loaderIn();
-		
+	var getContent = function (url, loader) {			
+
+		var hasLoader = (typeof loader !== 'undefined') ? loader : true;
+		if (hasLoader) loaderIn();
+	
 		$.ajax(url, {		
 			
 			dataType: 'json',
@@ -107,7 +111,7 @@
 					
 				handleMessages(data.messages);				
 			},	
-			complete: function (data) { loaderOut(); }
+			complete: function (data) { if (hasLoader) loaderOut(); }
 		});			
 	};
 

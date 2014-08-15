@@ -39,6 +39,9 @@ interface ILanguage {
 	public function BoardRivalsMove();
 	public function BoardReplayModalHeader();
 	public function BoardReplayModalBody();
+	public function BoardReplayAcceptModalHeader();
+	public function BoardReplayAcceptModalBody();
+
 	
 	public function LobbyPlayersList();
 	public function ToInvite();
