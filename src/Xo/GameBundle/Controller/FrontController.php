@@ -64,7 +64,7 @@ class FrontController extends \Symfony\Bundle\FrameworkBundle\Controller\Control
 			{
 				$response = new \stdClass();
 				$response->type = 'invite';
-				$response->body = $invitee;
+				$response->invitee = $invitee;
 			} 
 			else
 			{
