@@ -11,7 +11,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 			
 		if (!modalsEnabled)
 		{
-			$('#awaiting-modal .body').text('<?php echo $lang->AcceptAwaitingMessage()?>: '+invitee);
+			$('#awaiting-modal .modal-body').text('<?php echo $lang->AcceptAwaitingMessage()?>: '+invitee);
 			$('#awaiting-modal').modal();
 		}		
 	};
@@ -20,7 +20,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 
 		if (!modalsEnabled)
 		{
-			$('#accept-modal .body').text('<?php echo $lang->InviteAcceptMessage()?>: '+inviter);
+			$('#accept-modal .modal-body').text('<?php echo $lang->InviteAcceptMessage()?>: '+inviter);
 			$('#accept-modal').modal();
 		}	
 		

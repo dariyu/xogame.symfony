@@ -268,8 +268,6 @@ class FrontController extends \Symfony\Bundle\FrameworkBundle\Controller\Control
 			$this->model->QuitLobby();
 			
 		} catch (Exception $ex) {
-			
-			throw $ex;
 		}
 		
 		return $this->FormJsonResponse();
@@ -392,10 +390,8 @@ class FrontController extends \Symfony\Bundle\FrameworkBundle\Controller\Control
 		} catch (\Exception $ex) {
 			
 			$players = array();
-			$this->PostMessage('error', $this->lang->ErrorUnknown());
-			throw $ex;
-		}
-		
+			$this->PostMessage('error', $this->lang->ErrorUnknown());			
+		}		
 		
 		return $this->renderView('XoGameBundle:Views:lobby.html.php', array(
 			'inviter' => $inviter,
