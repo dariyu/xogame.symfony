@@ -1,7 +1,17 @@
 imports:
     - { resource: config.yml }
 
-#framework:
+framework:
+    profiler:
+        enabled: true
+        collect: true
+        only_exceptions: false
+        only_master_requests: false
+        dsn:      "mysql:host=%database_host%;dbname=%database_name%"
+        username: "%database_user%"
+        password: "%database_password%"
+        lifetime: 3600
+
 #    validation:
 #        cache: apc
 
