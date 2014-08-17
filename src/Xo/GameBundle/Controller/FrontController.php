@@ -83,6 +83,9 @@ class FrontController extends \Symfony\Bundle\FrameworkBundle\Controller\Control
 	
 	public function makemoveAction($locale, HttpFoundation\Request $request)
 	{
+		$stopwatch = $this->get('debug.stopwatch');
+        $stopwatch->start("makemove action");
+		
 		try {
 		
 			$cell = (integer)$request->get('cell');
@@ -108,6 +111,8 @@ class FrontController extends \Symfony\Bundle\FrameworkBundle\Controller\Control
 			$this->PostMessage('error', $this->lang->ErrorUnknown());
 			$response = null;
 		}
+		
+		$stopwatch->stop("makemove action");
 
 		return $this->FormJsonResponse($response);
 	}
