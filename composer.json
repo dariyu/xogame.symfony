@@ -8,6 +8,7 @@
     },
     "require": {
         "php": ">=5.3.3",
+		"ext-apcu": "*",
 		"ext-intl": "*",
 		"ext-mbstring": "*",
 		"sensio/generator-bundle": "~2.3",
