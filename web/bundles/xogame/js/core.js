@@ -1,5 +1,3 @@
-	var errorMsg = function(xhr, status, error) { console.log(error); };			
-
 	var fadeMessage = function ($element)
 	{
 		$element.fadeOut(10000, function () { });
@@ -32,6 +30,8 @@
 		var $newDanger = $('.container .alert-danger.hidden').clone();
 		showMessage($newDanger, body);
 	};
+	
+	var errorMsg = function(xhr, status, error) { console.log(error); showErrorMessage(error); };	
 
 	var handleMessages = function (messages) 
 	{		
