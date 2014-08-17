@@ -83,8 +83,8 @@ class FrontController extends \Symfony\Bundle\FrameworkBundle\Controller\Control
 	
 	public function makemoveAction($locale, HttpFoundation\Request $request)
 	{
-		$stopwatch = $this->get('debug.stopwatch');
-        $stopwatch->start("makemove action");
+		$stopwatch = new \Symfony\Component\Stopwatch\Stopwatch();
+		$stopwatch->start('makemove');
 		
 		try {
 		
@@ -112,8 +112,8 @@ class FrontController extends \Symfony\Bundle\FrameworkBundle\Controller\Control
 			$response = null;
 		}
 		
-		$stopwatch->stop("makemove action");
-
+		$stopwatch->stop('makemove');
+		
 		return $this->FormJsonResponse($response);
 	}
 	
