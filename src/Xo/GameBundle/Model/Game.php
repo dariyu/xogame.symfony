@@ -458,6 +458,7 @@ class Game {
 	{
 		if (!is_string($login) || empty($login)) { return false; }
 		
+		$this->em->flush();
 		$userRepo = $this->GetRepo('User');
 		$user = $userRepo->find($login);
 		
