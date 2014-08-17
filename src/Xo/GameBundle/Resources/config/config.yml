@@ -1,0 +1,5 @@
+profiler:
+    dsn:      "mysql:host=%database_host%;dbname=%database_name%"
+    username: "%database_user%"
+    password: "%database_password%"
+    lifetime: 3600

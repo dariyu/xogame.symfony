@@ -23,6 +23,11 @@ framework:
         handler_id:  ~
     fragments:       ~
     http_method_override: true
+    profiler:
+        dsn:      "mysql:host=%database_host%;dbname=%database_name%"
+        username: "%database_user%"
+        password: "%database_password%"
+        lifetime: 3600
 
 # Twig Configuration
 twig:
