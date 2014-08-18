@@ -12,8 +12,8 @@
 
 	var showMessage = function ($element, body)
 	{
-		$element.prepend(body);
-		$element.appendTo('#messages');
+		$element.append(body);
+		$('#messages').prepend($element);
 		$element.removeClass('hidden');
 
 		//fadeMessage($element);
