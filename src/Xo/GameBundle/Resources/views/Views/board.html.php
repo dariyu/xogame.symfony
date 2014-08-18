@@ -21,13 +21,27 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 	?>
 <script type="text/javascript">
 
+	var move = {
+		
+		make: function (cell) {
+
+			this.cell = cell;
+			$('#cell-'+this.cell).html('<?php printToken($token)?>');
+			$('.make-move').hide();			
+		},
+				
+		cancel: function () {
+		
+			$('#cell-'+this.cell).html('');
+			$('.make-move').show();
+		}
+		
+	};
+
 	//notifies	
 	var handlers = {
 		
-		move: function (data) {
-			
-			$('.make-move').hide();
-			$('#cell-'+data.cell).html('<?php printToken($token)?>');			
+		move: function (data) {			
 			if (data.state.canReplay) $('#replay-btn').removeClass('hidden');
 		},
 				
@@ -53,7 +67,7 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		leave_game: function (data)
 		{
 			$('#accept-modal').modal('hide');
-			$('#replay-btn').hide();			
+			$('#replay-btn').hide();
 		}
 		
 	};
@@ -100,7 +114,23 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		$('.make-move').click(function(e) 
 		{
 			e.preventDefault();
-			send($(this).attr('href'));
+			move.make($(this).data('cell'));		
+			send($(this).attr('href'), false, function (response) {
+				
+				console.log(response);
+				
+				if (typeof response.type !== 'undefined' && response.type === 'move')
+				{
+					console.log(move.cell, response.body.cell);
+					
+					if (move.cell !== response.body.cell) move.cancel();
+				} 
+				else
+				{
+					move.cancel();
+				}
+				
+			}, function () { console.log('move error'); });			
 		});
 		
 		$(window).bind("beforeunload", function(evt) {
@@ -173,7 +203,7 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 
 						} else {
 
-							echo '<a class="make-move" style="display: block; height: 100%;" href="'.
+							echo '<a data-cell="'.$k.'" class="make-move" style="display: block; height: 100%;" href="'.
 									$make_move_url.'?cell='.$k.'"></a>';
 						}
 						?>

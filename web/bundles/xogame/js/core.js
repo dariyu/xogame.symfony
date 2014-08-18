@@ -75,7 +75,7 @@
 		$('#loader').fadeOut();
 	};
 
-	var send = function(url, loader) {
+	var send = function(url, loader, onSuccess, onError) {
 
 		var hasLoader = (typeof loader !== 'undefined') ? loader : true;
 		if (hasLoader) loaderIn();
@@ -85,10 +85,15 @@
 			dataType: 'json',
 			success: function(data) { 
 				handleMessages(data.messages); 
-				if (typeof data.response !== 'undefined') handleNotify(data.response);				
+				if (typeof data.response !== 'undefined') handleNotify(data.response);
+				if (typeof onSuccess !== 'undefined') onSuccess(data.response);
 			},
 			complete: function (data) { if (hasLoader) loaderOut(); },
-			error: errorMsg
+			error: function (xhr, status, error) {
+				console.log('send error');
+				errorMsg(xhr, status, error); 
+				if (typeof onError !== 'undefined') onError(); 
+			}
 		});
 
 	};
