@@ -12,11 +12,11 @@
 
 	var showMessage = function ($element, body)
 	{
-		$element.append(body);
+		$element.prepend(body);
 		$element.appendTo('#messages');
 		$element.removeClass('hidden');
 
-		fadeMessage($element);
+		//fadeMessage($element);
 	};
 
 	var showInfoMessage = function (body)
