@@ -425,7 +425,7 @@ class Game {
 		}
 	}
 	
-	private function UpdateLobby()
+	public function UpdateLobby()
 	{
 		$lobbyRepo = $this->GetRepo('LobbyPlayer');
 		$player = $lobbyRepo->find($this->login);
@@ -451,7 +451,6 @@ class Game {
 	public function SigninRoutine($login)
 	{		
 		$this->login = $login;
-		$this->UpdateLobby();		
 	}
 	
 	public function Signin($login, $hash)

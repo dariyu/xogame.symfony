@@ -1,8 +1,6 @@
 	var fadeMessage = function ($element)
 	{
-		$element.fadeOut(10000, function () { });
-			
-		
+		$element.fadeOut(10000, function () { $(this).addClass('hidden'); });		
 /*		var fadeTimerId = setTimeout(function () { 
 			
 			clearTimeout(fadeTimerId);
@@ -14,9 +12,7 @@
 	{
 		$element.append(body);
 		$('#messages').prepend($element);
-		$element.removeClass('hidden');
-
-		//fadeMessage($element);
+		$element.removeClass('hidden');	
 	};
 
 	var showInfoMessage = function (body)
@@ -34,7 +30,10 @@
 	var errorMsg = function(xhr, status, error) { console.log(error); showErrorMessage(error); };	
 
 	var handleMessages = function (messages) 
-	{		
+	{	
+		//console.log(messages);		
+		//fadeMessage($('#messages > div:not(.hidden)'));
+		
 		for (id in messages)
 		{			
 			var message = messages[id];

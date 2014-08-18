@@ -1,5 +1,5 @@
 DirectoryIndex web/app.php
-#DirectoryIndex web/app_dev.php
+#DirectoryIndex app_dev.php
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
@@ -26,7 +26,7 @@ DirectoryIndex web/app.php
 
 
     RewriteCond %{REQUEST_FILENAME} -f
-    #RewriteRule ^(.*)$ web/app_dev.php [QSA,L]
+    #RewriteRule ^(.*)$ app_dev.php [QSA,L]
     RewriteRule ^(.*)$ web/app.php [QSA,L]
 
     # The following rewrites all other queries to the front controller. The
@@ -36,7 +36,7 @@ DirectoryIndex web/app.php
     # a safe, one-size fits all solution.
     RewriteCond %{REQUEST_URI}::$1 ^(/.+)(.+)::\2$
     RewriteRule ^(.*) - [E=BASE:%1]
-    #RewriteRule .? %{ENV:BASE}web/app_dev.php [L]
+    #RewriteRule .? %{ENV:BASE}app_dev.php [L]
     RewriteRule .? %{ENV:BASE}web/app.php [L]
 </IfModule>
 
@@ -45,7 +45,7 @@ DirectoryIndex web/app.php
         # When mod_rewrite is not available, we instruct a temporary redirect of
         # the startpage to the front controller explicitly so that the website
         # and the generated links can still be used.
-        #RedirectMatch 302 ^/$ /web/app_dev.php/
+        #RedirectMatch 302 ^/$ /app_dev.php/
         RedirectMatch 302 ^/$ /web/app.php/
         # RedirectTemp cannot be used instead
     </IfModule>

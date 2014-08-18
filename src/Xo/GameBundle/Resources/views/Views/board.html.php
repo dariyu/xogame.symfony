@@ -126,7 +126,7 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 					move.cancel();
 				}
 				
-			}, function () { console.log('move error'); });			
+			}, function () { move.cancel(); console.log('move error'); });			
 		});
 		
 		$(window).bind("beforeunload", function(evt) {

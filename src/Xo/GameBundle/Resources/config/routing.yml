@@ -1,59 +1,59 @@
 start:
     path:     /
-    defaults: { _controller:  XoGameBundle:Front:index }
+    defaults: { _controller:  XoGameBundle:Xo:index }
 
 main:
     path: /{locale}
-    defaults: { _controller: XoGameBundle:Front:main }
+    defaults: { _controller: XoGameBundle:Xo:main }
 
 signin:
     path: /{locale}/signin
-    defaults: { _controller: XoGameBundle:Front:signin }
-    
+    defaults: { _controller: XoGameBundle:Xo:signin }
+
 signup:
     path: /{locale}/signup
-    defaults: { _controller: XoGameBundle:Front:signup }
+    defaults: { _controller: XoGameBundle:Xo:signup }
 
 invite:
     path: /{locale}/invite
-    defaults: { _controller: XoGameBundle:Front:invite }
+    defaults: { _controller: XoGameBundle:Xo:invite }
 
 cancel:
     path: /{locale}/cancel
-    defaults: { _controller: XoGameBundle:Front:cancel }
+    defaults: { _controller: XoGameBundle:Xo:cancel }
 
 accept:
     path: /{locale}/accept
-    defaults: { _controller: XoGameBundle:Front:accept }
+    defaults: { _controller: XoGameBundle:Xo:accept }
 
 decline:
     path: /{locale}/decline
-    defaults: { _controller: XoGameBundle:Front:decline }
+    defaults: { _controller: XoGameBundle:Xo:decline }
 
 keepalive:
     path: /{locale}/keepalive
-    defaults: { _controller: XoGameBundle:Front:keepalive }
+    defaults: { _controller: XoGameBundle:Xo:keepalive }
 
 makemove:
     path: /{locale}/makemove
-    defaults: { _controller: XoGameBundle:Front:makemove }
+    defaults: { _controller: XoGameBundle:Xo:makemove }
 
 leave:
     path: /{locale}/leave
-    defaults: { _controller: XoGameBundle:Front:leave }
+    defaults: { _controller: XoGameBundle:Xo:leave }
 
 replay:
     path: /{locale}/replay
-    defaults: { _controller: XoGameBundle:Front:replay }
+    defaults: { _controller: XoGameBundle:Xo:replay }
 
 accept_replay:
     path: /{locale}/accept_replay
-    defaults: { _controller: XoGameBundle:Front:acceptReplay }
+    defaults: { _controller: XoGameBundle:Xo:acceptReplay }
 
 signout:
     path: /{locale}/signout
-    defaults: { _controller: XoGameBundle:Front:signout }
+    defaults: { _controller: XoGameBundle:Xo:signout }
 
 quit_lobby:
     path: /{locale}/quit_lobby
-    defaults: { _controller: XoGameBundle:Front:quitLobby }
+    defaults: { _controller: XoGameBundle:Xo:quitLobby }

@@ -9,7 +9,7 @@ $loader = require_once __DIR__.'/../app/bootstrap.php.cache';
 // Change 'sf2' to a unique prefix in order to prevent cache key conflicts
 // with other applications also using APC.
 
-$apcLoader = new ApcClassLoader('xosf3', $loader);
+$apcLoader = new ApcClassLoader('xosf2_1', $loader);
 $loader->unregister();
 $apcLoader->register(true);
 
