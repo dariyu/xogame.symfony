@@ -22,7 +22,7 @@ DirectoryIndex web/app.php
     # If the requested filename exists, simply serve it.
     # We only want to let Apache serve files and not directories.
     RewriteCond %{REQUEST_FILENAME} -f
-    RewriteRule .? - [L]
+    RewriteRule .? web/
 
 
     RewriteCond %{REQUEST_FILENAME} -f

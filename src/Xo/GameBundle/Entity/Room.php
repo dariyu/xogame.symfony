@@ -48,12 +48,15 @@ class Room {
 	
 	private function CheckCombo($combo, $token)
 	{
-		$result = true;
+//		$result = true;		
+//		foreach ($combo as $cell)
+//		{
+//			if (!isset($this->board[$cell]) || $this->board[$cell] !== $token) { $result = false; break; }
+//		}
 		
-		foreach ($combo as $cell)
-		{
-			if (!isset($this->board[$cell]) || $this->board[$cell] !== $token) { $result = false; break; }
-		}
+		
+		$intersec = array_intersect_assoc($this->board, array_fill_keys($combo, $token));
+		$result = count($intersec) === 3;
 		
 		return $result;
 	}
@@ -99,7 +102,6 @@ class Room {
 	
 	public function getRoomState($login, \Xo\GameBundle\Abstraction\ILanguage $lang)
 	{		
-		
 		if (count($this->board) >= 9)
 		{			
 			return new RoomState($this->board, false, true, $this->invitee_login === $login ? 'x' : 'o', $lang->BoardDraw()); 
@@ -119,9 +121,10 @@ class Room {
 			if ($this->CheckCombo($combo, $checkToken)) { $isGameover = true; break; }
 		}
 		
-		return $this->invitee_login === $login ?
+		$state = $this->invitee_login === $login ?
 				$this->GetStateAsInvitee($isGameover, $isEven, $lang) : $this->GetStateAsInviter($isGameover, $isEven, $lang);
 		
+		return $state;
 	}
 
 }

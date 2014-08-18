@@ -38,7 +38,7 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 		
 		$this->lang = new Model\RusLang();
 		$this->response = new HttpFoundation\Response();
-		$this->model = new Model\Game($this->lang, null, null);		
+		$this->model = new Model\Game($this->lang, null, null, null);		
 	}
 	
 	public function indexAction()
@@ -48,6 +48,7 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	
 	public function mainAction($locale, HttpFoundation\Request $request)
 	{
+		
 		try {
 		
 			$this->Init($locale, $request);
@@ -353,7 +354,10 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 		$this->em = $this->getDoctrine()->getManager();
 		
 		$this->stopwatch->start('model:init');		
-		$this->model->Init($this->em, $this->lang, $request->cookies->get('login'), $request->cookies->get('hash'));	
+		
+		$this->model->Init($this->em, $this->lang, 
+				$request->cookies->get('login'), $request->cookies->get('hash'), $this->stopwatch);	
+		
 		$this->stopwatch->stop('model:init');
 		
 		$this->stopwatch->stop('controller:init');

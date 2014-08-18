@@ -48,11 +48,12 @@ class Game {
 	
 	private $hydna = null;
 	private $em = null;
-	public	$messages = array();
+	private $stopwatch = null;
 	private $lang = null;
 	
-	public $login = null;
 	
+	public $login = null;
+	public	$messages = array();
 	
 	public function __construct(Abstraction\ILanguage $lang) {
 		
@@ -63,19 +64,24 @@ class Game {
 	private function BroadcastToUsers(Notify $notify)
 	{
 		// send a message
+		$this->stopwatch->start('game:hydna:BroadcastToUsers');
 		$this->hydna->push("http://xoapp.hydna.net/shared", json_encode($notify));
+		$this->stopwatch->stop('game:hydna:BroadcastToUsers');
 	}
 	
 	public function SendToUser($addressee, Notify $notify)
 	{
 		// send a message
+		$this->stopwatch->start('game:hydna:SendToUser');
 		$this->hydna->push("http://xoapp.hydna.net/user/$addressee", json_encode($notify));
+		$this->stopwatch->stop('game:hydna:SendToUser');
 	}
 	
-	public function Init(EntityManager $em, Abstraction\ILanguage $lang, $login, $hash)
+	public function Init(EntityManager $em, Abstraction\ILanguage $lang, $login, $hash, $stopwatch)
 	{
 		$this->em = $em;
 		$this->lang = $lang;
+		$this->stopwatch = $stopwatch;
 		
 		if ($login !== null && $this->Signin($login, $hash) === true)
 		{
@@ -84,11 +90,11 @@ class Game {
 	}
 	
 	public function MakeMove($cell)
-	{
+	{		
 		if ($this->login === null) 
 		{			
 			return false;
-		}
+		}		
 		
 		$room = $this->FindPlayingGame();
 		
@@ -96,10 +102,10 @@ class Game {
 		
 		$nMoves = count($room->board);
 		
-		if ($nMoves > 9 || isset($room->board[$cell])) { $this->PostMessage('error', $this->lang->ErrorMove()); return false; }
+		if ($nMoves > 9 || isset($room->board[$cell])) { $this->PostMessage('error', $this->lang->ErrorMove()); return false; }		
+		
 		
 		$state = $room->getRoomState($this->login, $this->lang);
-		
 		if ($state->canMove)
 		{		
 			$board = $room->board;
@@ -107,20 +113,22 @@ class Game {
 			$room->board = $board;
 			
 			$rivalLogin = $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;
+			
 			$state = $room->getRoomState($rivalLogin, $this->lang);
 			
 			$notify = new Notify('rivals_move');
 			$notify->body->cell = $cell;
 			$notify->body->canMove = $state->canMove;
 			$notify->body->canReplay = $state->canReplay;
-			$notify->Post('info', $state->message);
-		
+			$notify->Post('info', $state->message);	
+			
 			$this->SendToUser($rivalLogin, $notify);
 			
 			return $room->getRoomState($this->login, $this->lang);
-		}
-		
+		}		
 		$this->PostMessage('error', $this->lang->ErrorMove());
+		
+		
 		return false;
 	}
 	
@@ -235,8 +243,8 @@ class Game {
 				->setFirstResult(0)
 				->setMaxResults(1);
 
-				
-		return $rooms->matching($criteria)[0];		
+		$matching = $rooms->matching($criteria);
+		return $matching[0];		
 	}
 	
 	public function HandleState(Abstraction\IStateHandler & $handler)
@@ -250,7 +258,7 @@ class Game {
 			switch ($room->state)
 			{
 				case self::STATE_PLAYING: 
-					return $handler->HandleBoard($room->getRoomState($this->login, $this->lang));
+					return $handler->HandleBoard($room->getRoomState($this->login, $this->lang, $this->stopwatch));
 					
 				case self::STATE_LEFT_BY_INVITER:
 					return $this->login === $room->inviter_login ? $handler->HandleLobby() : 
@@ -496,7 +504,8 @@ class Game {
 				->setFirstResult(0)
 				->setMaxResults(1);
 
-		$room = $rooms->matching($criteria)[0];
+		$matching = $rooms->matching($criteria);
+		$room = $matching[0];
 		
 		return is_object($room) ? $room : null;
 	}
