@@ -117,12 +117,8 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 			move.make($(this).data('cell'));		
 			send($(this).attr('href'), false, function (response) {
 				
-				console.log(response);
-				
 				if (typeof response.type !== 'undefined' && response.type === 'move')
-				{
-					console.log(move.cell, response.body.cell);
-					
+				{				
 					if (move.cell !== response.body.cell) move.cancel();
 				} 
 				else
