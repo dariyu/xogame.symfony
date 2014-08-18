@@ -345,15 +345,18 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 			$this->stopwatch = new StopWatchStub();
 		}
 		
+		$this->stopwatch->start('controller:init');
+		
 		$this->request = $request;
 		$this->SetLang($locale);
 		
 		$this->em = $this->getDoctrine()->getManager();
 		
-		$this->stopwatch->start('model_init');		
+		$this->stopwatch->start('model:init');		
 		$this->model->Init($this->em, $this->lang, $request->cookies->get('login'), $request->cookies->get('hash'));	
-		$this->stopwatch->stop('model_init');
+		$this->stopwatch->stop('model:init');
 		
+		$this->stopwatch->stop('controller:init');
 	}	
 	
 	private function SetCookies($login, $hash)
