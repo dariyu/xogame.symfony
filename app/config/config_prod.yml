@@ -13,19 +13,18 @@ doctrine:
 
 monolog:
     handlers:
-#        type: errorlog
-#        level: error
-#        syslog:
-#            type: syslog
-#            level: error
-#        main:
-#            type:         fingers_crossed
-#            action_level: error
-#            handler:      nested
-#        console:
-#            type:  console
-
         nested:
             type:  stream
             path:  "php://stderr"
+#            path: "%kernel.logs_dir%/%kernel.environment%.log"
             level: debug
+        syslog:
+            type: syslog
+            level: error
+        main:
+            type:         fingers_crossed
+            action_level: debug
+            handler:      nested
+#        console:
+#            type:  console
+

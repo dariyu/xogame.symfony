@@ -1,7 +1,7 @@
 <?php
 
 function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board, $can_move, $can_replay, 
-		$token, $make_move_url, $leave_url, $replay_url, $accept_replay_url, $main_url) {
+		$token, $make_move_url, $leave_url, $replay_url, $accept_replay_url, $main_url, $quit_board_url) {
 	
 	$k = 0;
 	$replay_btn_class = ($can_replay === true) ? '' : 'hidden';
@@ -132,10 +132,11 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		$(window).off("beforeunload").on("beforeunload", function(evt) {
 			
 			loaderIn();
-			$.ajax('<?php echo $leave_url?>', {
+			$.ajax('<?php echo $quit_board_url?>', {
 				
 				async: false,
-				complete: function () { loaderOut(); }
+				success: function () { loaderOut(); },
+				complete: function () {  }
 			});
 			
 			return '';			
@@ -219,5 +220,5 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 <?php } 
 
 RenderBoard($login, $lang, $board, $can_move, $can_replay, $token, 
-		$make_move_url, $leave_url, $replay_url, $accept_replay_url, $main_url);
+		$make_move_url, $leave_url, $replay_url, $accept_replay_url, $main_url, $quit_board_url);
 echo $view->render('XoGameBundle:Views:scripts.html.php', array('login' => $login));

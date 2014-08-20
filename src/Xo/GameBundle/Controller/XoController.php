@@ -286,6 +286,19 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 		return $this->FormJsonResponse();
 	}
 	
+	public function quitBoardAction($locale, HttpFoundation\Request $request) {
+		
+		try {
+			
+			$this->Init($locale, $request);
+			$this->model->QuitBoard();
+			
+		} catch (Exception $ex) {
+		}
+		
+		return $this->FormJsonResponse();
+	}
+	
 	public function keepaliveAction($locale, HttpFoundation\Request $request)
 	{		
 		try {
@@ -406,6 +419,7 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 			'token' => $state->token,
 			'make_move_url' => $this->generateUrl('makemove', array('locale' => $this->locale)),
 			'leave_url' => $this->generateUrl('leave', array('locale' => $this->locale)),
+			'quit_board_url' => $this->generateUrl('quit_board', array('locale' => $this->locale)),
 			'replay_url' => $this->generateUrl('replay', array('locale' => $this->locale)),
 			'accept_replay_url' => $this->generateUrl('accept_replay', array('locale' => $this->locale)),
 			'main_url' => $this->generateUrl('main', array('locale' => $this->locale)),

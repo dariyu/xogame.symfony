@@ -57,3 +57,7 @@ signout:
 quit_lobby:
     path: /{locale}/quit_lobby
     defaults: { _controller: XoGameBundle:Xo:quitLobby }
+
+quit_board:
+    path: /{locale}/quit_board
+    defaults: { _controller: XoGameBundle:Xo:quitBoard }

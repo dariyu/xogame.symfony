@@ -303,7 +303,10 @@ class Game {
 	
 	public function QuitBoard()
 	{
-		if ($this->login === null) { $this->PostMessage('error', $this->lang->ErrorLeave()); return false; }		
+		if ($this->login === null) { $this->PostMessage('error', $this->lang->ErrorLeave()); return false; }
+		
+		$this->Leave();
+		return $this->QuitLobby();
 	}
 
 	public function Accept()

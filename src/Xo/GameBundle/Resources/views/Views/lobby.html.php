@@ -170,7 +170,8 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 			$.ajax('<?php echo $quit_url?>', {
 				
 				async: false,
-				complete: function () { loaderOut(); }
+				success: function () { loaderOut(); },
+				complete: function () {}
 			});
 			
 			return '';			
