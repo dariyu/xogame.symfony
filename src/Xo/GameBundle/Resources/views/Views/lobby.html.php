@@ -164,7 +164,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 			hideAcceptModal();			
 		});
 		
-		$(window).bind("beforeunload", function(evt) {
+		$(window).off("beforeunload").on("beforeunload", function(evt) {
 			
 			loaderIn();
 			$.ajax('<?php echo $quit_url?>', {

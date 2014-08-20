@@ -285,7 +285,6 @@ class Game {
 	public function QuitLobby()
 	{
 		if ($this->login === null) { $this->PostMessage('error', $this->lang->ErrorLeave()); return false; }
-
 		
 		$logins = array($this->login);
 		$notify = new Notify('leaved');
@@ -300,6 +299,11 @@ class Game {
 			->getQuery()->execute();
 		
 		return true;
+	}
+	
+	public function QuitBoard()
+	{
+		if ($this->login === null) { $this->PostMessage('error', $this->lang->ErrorLeave()); return false; }		
 	}
 
 	public function Accept()

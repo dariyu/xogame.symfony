@@ -12,6 +12,3 @@ _configurator:
 
 _main:
     resource: routing.yml
-
-_xo_game:
-    resource: "@XoGameBundle/Resources/config/routing.yml"

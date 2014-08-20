@@ -118,10 +118,11 @@
 			complete: function (data) { if (hasLoader) loaderOut(); }
 		});			
 	};
-
 	
 	$(function (){
 		
 		fadeMessage($('#messages > div'));
+		
 			
 	});
+

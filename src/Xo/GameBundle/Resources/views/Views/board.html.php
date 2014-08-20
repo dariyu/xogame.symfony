@@ -129,7 +129,7 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 			}, function () { move.cancel(); console.log('move error'); });			
 		});
 		
-		$(window).bind("beforeunload", function(evt) {
+		$(window).off("beforeunload").on("beforeunload", function(evt) {
 			
 			loaderIn();
 			$.ajax('<?php echo $leave_url?>', {
