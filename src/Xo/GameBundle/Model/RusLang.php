@@ -175,7 +175,7 @@ class RusLang implements \Xo\GameBundle\Abstraction\ILanguage {
 	
 	public function FieldRequired()
 	{
-		return 'Это поле должно быть заполнено';
+		return 'Обязательное поле';
 	}
 	
 	public function LoginPlaceholder() {
