@@ -28,3 +28,8 @@ monolog:
 #        console:
 #            type:  console
 
+services:
+    kernel.listener.xolistener:
+        class: Xo\GameBundle\EventListener\XoExceptionListener
+        tags:
+        - { prority: 255, name: kernel.event_listener, event: kernel.exception, method: onKernelException }

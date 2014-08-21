@@ -27,7 +27,11 @@
 		showMessage($newDanger, body);
 	};
 	
-	var errorMsg = function(xhr, status, error) { console.log(error); showErrorMessage(error); };	
+	var errorMsg = function(xhr, status, error) 
+	{ 
+		//console.log(xhr, status, error); 
+		handleMessages(xhr.responseJSON.messages); 
+	};	
 
 	var handleMessages = function (messages) 
 	{	
@@ -88,8 +92,7 @@
 				if (typeof onSuccess !== 'undefined') onSuccess(data.response);
 			},
 			complete: function (data) { if (hasLoader) loaderOut(); },
-			error: function (xhr, status, error) {
-				console.log('send error');
+			error: function (xhr, status, error) {				
 				errorMsg(xhr, status, error); 
 				if (typeof onError !== 'undefined') onError(); 
 			}
@@ -115,7 +118,11 @@
 					
 				handleMessages(data.messages);				
 			},	
-			complete: function (data) { if (hasLoader) loaderOut(); }
+			complete: function (data) { if (hasLoader) loaderOut(); },
+			error: function (xhr, status, error) {				
+				errorMsg(xhr, status, error);
+			}
+			
 		});			
 	};
 	

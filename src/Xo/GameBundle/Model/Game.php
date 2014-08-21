@@ -10,7 +10,7 @@ use Doctrine\ORM\EntityManager;
 
 require_once(__DIR__."/hydna-push.php");
 
-class Notify {
+class Notice {
 	
 	public $type = null;
 	public $body = null;
@@ -61,7 +61,7 @@ class Game {
 		$this->lang = $lang;		
 	}
 	
-	private function BroadcastToUsers(Notify $notify)
+	private function BroadcastToUsers(Notice $notify)
 	{
 		// send a message
 		$this->stopwatch->start('game:hydna:BroadcastToUsers');
@@ -69,7 +69,7 @@ class Game {
 		$this->stopwatch->stop('game:hydna:BroadcastToUsers');
 	}
 	
-	public function SendToUser($addressee, Notify $notify)
+	public function SendToUser($addressee, Notice $notify)
 	{
 		// send a message
 		$this->stopwatch->start('game:hydna:SendToUser');
@@ -93,43 +93,38 @@ class Game {
 	{		
 		if ($this->login === null) 
 		{			
-			return false;
+			throw new \Exception($this->lang->ErrorMove());
 		}		
 		
-		$room = $this->FindPlayingGame();
-		
-		if (!($room instanceof Entity\Room)) { return false; }
+		$room = $this->FindPlayingGame();		
+		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorMove()); }
 		
 		$nMoves = count($room->board);
 		
-		if ($nMoves > 9 || isset($room->board[$cell])) { $this->PostMessage('error', $this->lang->ErrorMove()); return false; }		
+		if ($nMoves >= 9 || isset($room->board[$cell])) { throw new \Exception($this->lang->ErrorMove()); }		
 		
 		
 		$state = $room->getRoomState($this->login, $this->lang);
-		if ($state->canMove)
-		{		
-			$board = $room->board;
-			$board[$cell] = $state->token;
-			$room->board = $board;
-			
-			$rivalLogin = $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;
-			
-			$state = $room->getRoomState($rivalLogin, $this->lang);
-			
-			$notify = new Notify('rivals_move');
-			$notify->body->cell = $cell;
-			$notify->body->canMove = $state->canMove;
-			$notify->body->canReplay = $state->canReplay;
-			$notify->Post('info', $state->message);	
-			
-			$this->SendToUser($rivalLogin, $notify);
-			
-			return $room->getRoomState($this->login, $this->lang);
-		}		
-		$this->PostMessage('error', $this->lang->ErrorMove());
 		
+		if ($state->canMove !== true) { throw new \Exception($this->lang->ErrorMove()); }
+				
+		$board = $room->board;
+		$board[$cell] = $state->token;
+		$room->board = $board;
+
+		$rivalLogin = $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;
 		
-		return false;
+		$rivalState = $room->getRoomState($rivalLogin, $this->lang);
+
+		$notify = new Notice('rivals_move');
+		$notify->body->cell = $cell;
+		$notify->body->canMove = $rivalState->canMove;
+		$notify->body->canReplay = $rivalState->canReplay;
+		$notify->Post('info', $rivalState->message);	
+
+		$this->SendToUser($rivalLogin, $notify);
+			
+		return $room->getRoomState($this->login, $this->lang);
 	}
 	
 	public function GetLobbyPlayers()
@@ -148,55 +143,16 @@ class Game {
 		$this->messages[] = $newMessage;
 	}
 	
-	public function GetLobbyData()
-	{
-		$out = new \stdClass();
-		
-		$players = $this->GetLobbyPlayers();
-		
-		$out->players = array();
-		foreach ($players as $player)
-		{			
-			$out->players[] = $player->login;
-		}		
-		 		
-		$game = $this->FindOpenGame();
-		
-		if ($game !== null)
-		{		
-			$out->game = new \stdClass();
-
-			$out->game->inviter = $game->inviter_login;
-			$out->game->invitee = $game->invitee_login;
-			
-			switch ($game->state)
-			{
-				case self::STATE_INVITED: 
-					$out->game->state = 'invited'; 
-					break;
-					
-				case self::STATE_DECLINED:
-					$out->game->state = 'declined';
-					break;
-				
-				case self::STATE_PLAYING:
-					$out->game->state = 'playing';
-					break;
-			}
-		}
-		
-		return $out;		
-	}
 	
 	public function Leave()
 	{
-		if ($this->login === null) { return false; }
+		if ($this->login === null) { throw \Exception($this->lang->ErrorLeave()); }
 		
 		$room = $this->FindOpenGame();
 		
-		if (!($room instanceof Entity\Room)) { return false; }
+		if (!($room instanceof Entity\Room)) { throw \Exception($this->lang->ErrorLeave()); }
 
-		$quitMessage = new Notify('leave_game');
+		$quitMessage = new Notice('leave_game');
 		$quitMessage->Post('info', $this->lang->BoardLeft());
 		
 		switch ($room->state)
@@ -214,17 +170,17 @@ class Game {
 				break;
 			
 			case self::STATE_LEFT_BY_INVITEE:
-				if ($this->login == $room->inviter_login) { $this->em->remove($room); } else { return false; }
+				if ($this->login == $room->inviter_login) { $this->em->remove($room); } 
+				else { throw \Exception($this->lang->ErrorLeave()); }
 				break;
 				
 			case self::STATE_LEFT_BY_INVITER:
-				if ($this->login == $room->invitee_login) { $this->em->remove($room); } else { return false; }
+				if ($this->login == $room->invitee_login) { $this->em->remove($room); } 
+				else { throw \Exception($this->lang->ErrorLeave()); }
 				break;
 			
-			default: return false;
-		}
-		
-		
+			default: throw \Exception($this->lang->ErrorLeave());
+		}		
 		
 		return true;
 		
@@ -284,10 +240,10 @@ class Game {
 	
 	public function QuitLobby()
 	{
-		if ($this->login === null) { $this->PostMessage('error', $this->lang->ErrorLeave()); return false; }
+		if ($this->login === null) { throw new \Exception($this->lang->ErrorLeave()); }
 		
 		$logins = array($this->login);
-		$notify = new Notify('leaved');
+		$notify = new Notice('leaved');
 		$notify->body->logins = $logins;
 		$this->BroadcastToUsers($notify);		
 		
@@ -303,7 +259,7 @@ class Game {
 	
 	public function QuitBoard()
 	{
-		if ($this->login === null) { $this->PostMessage('error', $this->lang->ErrorLeave()); return false; }
+		if ($this->login === null) { throw new \Exception($this->lang->ErrorLeave()); }
 		
 		$this->Leave();
 		return $this->QuitLobby();
@@ -311,19 +267,14 @@ class Game {
 
 	public function Accept()
 	{
-		if ($this->login === null) { return false; }
+		if ($this->login === null) { throw new \Exception($this->lang->ErrorAccept()); }
 		
 		$repo = $this->GetRepo(self::REPO_ROOM);
 		$room = $repo->findOneBy(array('invitee_login' => $this->login, 'state' => self::STATE_INVITED));
 		
-		if (!($room instanceof Entity\Room)) { 
-			
-			$this->PostMessage('error', $this->lang->ErrorAccept());
-			return false; 
-			
-		}
+		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorAccept()); }
 
-		$notify = new Notify('accepted');
+		$notify = new Notice('accepted');
 		$notify->body->invitee = $this->login;
 		$this->SendToUser($room->inviter_login, $notify);	
 		
@@ -334,14 +285,14 @@ class Game {
 	
 	public function Decline()
 	{
-		if ($this->login === null) { return false; }
+		if ($this->login === null) { throw new \Exception($this->lang->ErrorDecline()); }
 		
 		$repo = $this->GetRepo(self::REPO_ROOM);
 		$room = $repo->findOneBy(array('invitee_login' => $this->login, 'state' => self::STATE_INVITED));
 		
-		if (!($room instanceof Entity\Room)) { return false; }
+		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorDecline()); }
 
-		$notify = new Notify('declined');
+		$notify = new Notice('declined');
 		$notify->body->invitee = $this->login;
 		$this->SendToUser($room->inviter_login, $notify);	
 		
@@ -352,14 +303,14 @@ class Game {
 	
 	public function Cancel()
 	{
-		if ($this->login === null) { return false; }
+		if ($this->login === null) { throw new \Exception($this->lang->ErrorCancel()); }
 		
 		$repo = $this->GetRepo(self::REPO_ROOM);		
 		$game = $repo->find($this->login);		
 		
-		if (!($game instanceof Entity\Room)) { return false; }
+		if (!($game instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorCancel()); }
 		
-		$notify = new Notify('canceled');
+		$notify = new Notice('canceled');
 		$notify->body->inviter = $this->login;
 		$this->SendToUser($game->invitee_login, $notify);		
 		
@@ -370,8 +321,7 @@ class Game {
 	{
 		if (!is_string($login) || empty($login) || strlen($login) > 64) {
 
-			$this->PostMessage('error', $this->lang->ErrorLogin());
-			return false;
+			throw new \Exception($this->lang->ErrorSignup());
 		}
 
 		$user = new Entity\User($login, $hash);
@@ -389,9 +339,9 @@ class Game {
 	public function ProposeReplay()
 	{
 		$room = $this->FindOpenGame();		
-		if (!($room instanceof Entity\Room)) { return false; }
+		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorReplay()); }
 		
-		$notify = new Notify('replay');
+		$notify = new Notice('replay');
 		$this->SendToUser($this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login, $notify);	
 		
 		return true;
@@ -400,9 +350,9 @@ class Game {
 	public function Replay()
 	{
 		$room = $this->FindOpenGame();		
-		if (!($room instanceof Entity\Room)) { return false; }
+		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorReplay()); }
 
-		$notify = new Notify('accept_replay');
+		$notify = new Notice('accept_replay');
 		$this->SendToUser($this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login, $notify);	
 		
 		$room->board = array();
@@ -428,7 +378,7 @@ class Game {
 		
 		if (is_array($leavedLogins) && !empty($leavedLogins))
 		{
-			$notify = new Notify('leaved');
+			$notify = new Notice('leaved');
 			$notify->body->logins = $leavedLogins;
 			$this->BroadcastToUsers($notify);			
 			
@@ -451,7 +401,7 @@ class Game {
 
 		} else
 		{
-			$notify = new Notify('player_online');	
+			$notify = new Notice('player_online');	
 			$notify->body->login = $this->login;
 		
 			$this->BroadcastToUsers($notify);
@@ -498,7 +448,7 @@ class Game {
 	
 	public function FindOpenGame()
 	{
-		if ($this->login === null) { return null; }
+		if ($this->login === null) { throw new \Exception($this->lang->ErrorLogin()); }
 		
 		$this->em->flush();
 		$rooms = $this->GetRepo(self::REPO_ROOM);
@@ -521,8 +471,7 @@ class Game {
 	{
 		if ($this->login === null || !$this->HasUser($invitee_login)) 
 		{
-			$this->PostMessage('error', $this->lang->ErrorLogin());
-			return false;				
+			throw new \Exception($this->lang->ErrorInvite());
 		}		
 				
 		$rooms = $this->GetRepo(self::REPO_ROOM);
@@ -539,19 +488,17 @@ class Game {
 
 		if (is_object($openRoom))
 		{
-			$this->PostMessage('error', $this->lang->ErrorInvite());
-			return false;
+			throw new \Exception($this->lang->ErrorInvite());
 		}
 		
 		$newRoom = new Entity\Room($this->login, $invitee_login, self::STATE_INVITED);
 		$this->em->persist($newRoom);
 		
-		$invitedMsg = new Notify('invited');
+		$invitedMsg = new Notice('invited');
 		$invitedMsg->body->inviter = $this->login;
 		$this->SendToUser($invitee_login, $invitedMsg);		
 		
-		return true;
-		
+		return true;		
 	}	
 	
 }

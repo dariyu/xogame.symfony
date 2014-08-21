@@ -67,6 +67,7 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		leave_game: function (data)
 		{
 			$('#accept-modal').modal('hide');
+			$('.make-move').hide();
 			$('#replay-btn').hide();
 		}
 		

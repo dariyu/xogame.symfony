@@ -47,78 +47,42 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	}
 	
 	public function mainAction($locale, HttpFoundation\Request $request)
-	{
-		
-		try {
-		
-			$this->Init($locale, $request);
-			
-		} catch (\Exception $e)
-		{
-			$this->PostMessage('error', $this->lang->ErrorUnknown());
-		}	
+	{		
+		$this->Init($locale, $request);
 		
 		return $this->RenderResponse($this->model->HandleState($this));		
 	}
 	
 	public function inviteAction($locale, HttpFoundation\Request $request)
 	{
-		try {
-			
-			$this->Init($locale, $request);
-			$invitee = $request->get('invitee');
-			
-			if ($this->model->Invite($invitee) !== false)
-			{
-				$response = new \stdClass();
-				$response->type = 'invite';
-				$response->body = new \stdClass();
-				$response->body->invitee = $invitee;
-			} 
-			else
-			{
-				$response = null;
-			}
-			
-		} catch (\Exception $ex) {
-			
-			$response = null;
-			$this->PostMessage('error', $this->lang->ErrorUnknown());			
-		}
+		$this->Init($locale, $request);
+		$invitee = $request->get('invitee');
+
+		$this->model->Invite($invitee);
+
+		$response = new \stdClass();
+		$response->type = 'invite';
+		$response->body = new \stdClass();
+		$response->body->invitee = $invitee;
 
 		return $this->FormJsonResponse($response);
 	}
 	
 	public function makemoveAction($locale, HttpFoundation\Request $request)
 	{		
-		try {
-		
-			$cell = (integer)$request->get('cell');			
-			$this->Init($locale, $request);
-			
-			$this->stopwatch->start('makemove');
-			
-			if (($state = $this->model->MakeMove($cell)) !== false)
-			{			
-				$response = new \stdClass();
-				$response->type = 'move';
-				$response->body = new \stdClass();
-				$response->body->state = $state;
-				$response->body->cell = $cell;
-				
-				$this->PostMessage('info', $state->message);	
-				
-			} else
-			{
-				$response = null;
-			}
+		$cell = (integer)$request->get('cell');			
+		$this->Init($locale, $request);
 
-		} catch (\Exception $ex) {
-
-			$this->PostMessage('error', $this->lang->ErrorUnknown());
-			$response = null;
-		}
+		$this->stopwatch->start('makemove');
+		$state = $this->model->MakeMove($cell);
 		
+		$response = new \stdClass();
+		$response->type = 'move';
+		$response->body = new \stdClass();
+		$response->body->state = $state;
+		$response->body->cell = $cell;
+
+		$this->PostMessage('info', $state->message);		
 		$this->stopwatch->stop('makemove');
 		
 		return $this->FormJsonResponse($response);
@@ -126,76 +90,35 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	
 	public function declineAction($locale, HttpFoundation\Request $request)
 	{
-		try {
-			
-			$this->Init($locale, $request);			
-			if ($this->model->Decline() === false)
-			{
-				$this->PostMessage('error', $this->lang->ErrorDecline());
-			}				
-			
-		} catch (\Exception $ex) {
-
-			$this->PostMessage('error', $this->lang->ErrorUnknown());			
-		}
+		$this->Init($locale, $request);			
+		$this->model->Decline();
 		
 		return $this->FormJsonResponse('ok');
 	}
 	
 	public function cancelAction($locale, HttpFoundation\Request $request)
 	{
-		try {
-			$this->Init($locale, $request);
-		
-			if ($this->model->Cancel() === false)
-			{
-				$this->PostMessage('error', $this->lang->ErrorCancel());
-				$response = null;
-			} else
-			{
-				$response = 'ok';
-			}
-		}
-		catch (\Exception $ex)
-		{
-			$this->PostMessage('error', $this->lang->ErrorUnknown());
-			$response = null;
-		}
+		$this->Init($locale, $request);
+
+		$this->model->Cancel();
+		$response = 'ok';
 		
 		return $this->FormJsonResponse($response);
 	}
 
 	public function leaveAction($locale, HttpFoundation\Request $request)
 	{
-		try {
-			
-			$this->Init($locale, $request);				
-			if ($this->model->Leave() === false)
-			{
-				$this->PostMessage('error', $this->lang->ErrorCancel());				
-			}
-		}
-		catch (\Exception $ex)
-		{
-			$this->PostMessage('error', $this->lang->ErrorUnknown());
-		}
+		$this->Init($locale, $request);				
+		$this->model->Leave();
 		
 		return $this->RenderResponse($this->model->HandleState($this));
 	}
 	
 	public function replayAction($locale, HttpFoundation\Request $request)
 	{
-		$response = null;
-		
-		try {
-			
-			$this->Init($locale, $request);
-			if ($this->model->ProposeReplay() === true) { $response = 'ok'; }
-			
-		} catch (\Exception $ex) {
-
-			$this->PostMessage('error', $this->lang->ErrorUnknown());
-		}
+		$this->Init($locale, $request);
+		$this->model->ProposeReplay();
+		$response = 'ok';	
 		
 		return $this->FormJsonResponse($response);
 	}
@@ -214,44 +137,29 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	
 	public function acceptReplayAction($locale, HttpFoundation\Request $request)
 	{
-		try {
-			
-			$this->Init($locale, $request);
-			if ($this->model->Replay() === false)
-			{
-				$this->PostMessage('error', $this->lang->ErrorReplay());				
-			} 
-			
-		} catch (\Exception $ex) {
-
-			$this->PostMessage('error', $this->lang->ErrorUnknown());
-		}
+		$this->Init($locale, $request);
+		$this->model->Replay();			
 		
 		return $this->RenderResponse($this->model->HandleState($this));
 	}
 	
 	public function signinAction($locale, HttpFoundation\Request $request)
 	{
-		$response = null;
+		$this->Init($locale, $request);
+
+		$login = $request->get('login');
+		$hash = $this->toHash($request->get('password'));
 		
-		try {
-			
-			$this->Init($locale, $request);
-		
-			$login = $request->get('login');
-			$hash = $this->toHash($request->get('password'));
-		
-			if ($this->model->Signin($login, $hash) === true)
-			{
-				$this->SetCookies($login, $hash);
-				$response = new \stdClass();
-				$response->html = $this->model->HandleState($this);
-				$response->login = $login;
-			}
-			
-		} catch (\Exception $ex)
+		if ($this->model->Signin($login, $hash) === true)
 		{
-			$this->PostMessage('error', $this->lang->ErrorSignin());			
+			$this->model->UpdateLobby();
+			$this->SetCookies($login, $hash);
+			$response = new \stdClass();
+			$response->html = $this->model->HandleState($this);
+			$response->login = $login;
+		} else
+		{
+			$response = null;
 		}
 		
 		return $this->FormJsonResponse($response);
@@ -259,86 +167,52 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 
 	public function acceptAction($locale, HttpFoundation\Request $request)
 	{
-		try {
-			
-			$this->Init($locale, $request);	
-			$this->model->Accept();
-			
-		} catch (\Exception $ex)
-		{
-			$this->PostMessage('error', $this->lang->ErrorUnknown());	
-		}
-		
+		$this->Init($locale, $request);	
+		$this->model->Accept();		
 		
 		return $this->RenderResponse($this->model->HandleState($this));
 	}
 	
 	public function quitLobbyAction($locale, HttpFoundation\Request $request) {
 		
-		try {
+		$this->Init($locale, $request);
+		$this->model->QuitLobby();
 			
-			$this->Init($locale, $request);
-			$this->model->QuitLobby();
-			
-		} catch (Exception $ex) {
-		}
-		
 		return $this->FormJsonResponse();
 	}
 	
 	public function quitBoardAction($locale, HttpFoundation\Request $request) {
 		
-		try {
+		$this->Init($locale, $request);
+		$this->model->QuitBoard();
 			
-			$this->Init($locale, $request);
-			$this->model->QuitBoard();
-			
-		} catch (Exception $ex) {
-		}
-		
 		return $this->FormJsonResponse();
 	}
 	
 	public function keepaliveAction($locale, HttpFoundation\Request $request)
 	{		
-		try {
-			
-			$this->Init($locale, $request);
-			$this->model->UpdateLobby();		
-			
-		} catch (\Exception $ex) {
-
-			$this->PostMessage('error', $this->lang->ErrorUnknown());
-		}
+		$this->Init($locale, $request);
+		$this->model->UpdateLobby();			
 		
 		return $this->FormJsonResponse('ok');
 	}	
 
 	public function signupAction($locale, HttpFoundation\Request $request)
 	{
-		$response = null;
-		
-		try {
-			
-			$this->Init($locale, $request);
-			$login = $request->get('login');
-			$hash = $this->toHash($request->get('password'));			
-			
-			if ($this->model->Signup($login, $hash) === true)
-			{
-				$this->SetCookies($login, $hash);			
-				$this->PostMessage('info', $this->lang->SignupSuccess());
+		$this->Init($locale, $request);
+		$login = $request->get('login');
+		$hash = $this->toHash($request->get('password'));			
 
-				$response = new \stdClass();
-				$response->html = $this->model->HandleState($this);
-				$response->login = $login;
-			}
-			
-		} catch (\Exception $ex) {
-			
-			$this->PostMessage('error', $this->lang->ErrorUnknown());
-		}
+		$this->model->Signup($login, $hash);
+		$this->model->UpdateLobby();
 		
+		$this->SetCookies($login, $hash);			
+		$this->PostMessage('info', $this->lang->SignupSuccess());
+
+		$response = new \stdClass();
+		$response->html = $this->model->HandleState($this);
+		$response->login = $login;		
+			
 		return $this->FormJsonResponse($response);
 		
 	}
@@ -430,15 +304,7 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	
 	private function FormLobbyBody($inviter = null, $invitee = null)
 	{	
-		try {
-			
-			$players = $this->model->GetLobbyPlayers();
-			
-		} catch (\Exception $ex) {
-			
-			$players = array();
-			$this->PostMessage('error', $this->lang->ErrorUnknown());			
-		}		
+		$players = $this->model->GetLobbyPlayers();			
 		
 		return $this->renderView('XoGameBundle:Views:lobby.html.php', array(
 			'inviter' => $inviter,
@@ -519,9 +385,7 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 			return $this->response->setContent(json_encode($response));
 		}
 		else
-		{
-			
-			
+		{			
 			$messages = $this->renderView('XoGameBundle:Views:messages.html.php', array('messages' => $messagesArray));
 			$navbar = $this->renderView('XoGameBundle:Views:navbar.html.php', 
 					array(	'lang' => $this->lang,
