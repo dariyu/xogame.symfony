@@ -7,17 +7,23 @@
  */
 
 ?>
-<script type="text/javascript">		
+<script type="text/javascript">
+	
+	//var handlers = {};
 
 	if (typeof userChan === 'undefined')
 	{
-
 		var handleHydnaNotify = function (event)
 		{
-			console.log(event.data);
-
+			console.log('incoming: ', event.data);
+			
 			var obj = JSON.parse(event.data);
-			handleNotify(obj);
+			handleNotice(obj, handlers);
+		};
+
+		var onHydnaError = function (e) {
+		
+			showErrorMessage('<?php echo $lang->ErrorConnection()?>: http://xoapp.hydna.net: ' + e.data);		
 		};
 
 
@@ -31,7 +37,15 @@
 		sharedChan.onmessage = handleHydnaNotify;
 		userChan.onmessage = handleHydnaNotify;
 		
-		console.log('hydna');		
+		// an error occured when connecting or opening the channel
+		sharedChan.onerror = onHydnaError;
+		userChan.onerror = onHydnaError;
+		
+		console.log('hydna init');
+		
+	} else
+	{
+		console.log('no hydna init');
 	}
 	
 	

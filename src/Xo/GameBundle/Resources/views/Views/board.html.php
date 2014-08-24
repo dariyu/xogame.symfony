@@ -6,15 +6,18 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 	$k = 0;
 	$replay_btn_class = ($can_replay === true) ? '' : 'hidden';
 	
-	function printToken($token)
+	$zero = '<span class="glyphicon glyphicon-ok-circle"></span>';
+	$cross = '<span class="glyphicon glyphicon-remove"></span>';
+	
+	function printToken($token, $zero, $cross)
 	{
 		if ($token === 'o')
 		{
-			echo '<span class="glyphicon glyphicon-ok-circle"></span>';
+			echo $zero;
 
 		} else
 		{
-			echo '<span class="glyphicon glyphicon-remove"></span>';
+			echo $cross;
 		}
 	}
 	
@@ -26,31 +29,62 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		make: function (cell) {
 
 			this.cell = cell;
-			$('#cell-'+this.cell).html('<?php printToken($token)?>');
+			$('#cell-'+this.cell).html('<?php printToken($token, $zero, $cross)?>');
 			$('.make-move').hide();			
 		},
 				
 		cancel: function () {
 		
+			console.log('move not accepted');
 			$('#cell-'+this.cell).html('');
 			$('.make-move').show();
 		}
 		
 	};
+	
+	var stateHandler = function (data)
+	{
+		console.log(data);		
+	
+		//has move
+		if (data.cell !== 'undefined')
+		{
+			$('#cell-'+data.cell).html(data.cellToken === 'o' ? '<?php echo $zero;?>' : '<?php echo $cross;?>');
+		}
+	
+		
+		if (data.state.canReplay) { $('#replay-btn').removeClass('hidden'); }
+		if (data.state.canMove) { $('.make-move').show(); } else { $('.make-move').hide(); }
+	};	
 
 	//notifies	
-	var handlers = {
+	handlers = {
 		
-		move: function (data) {			
-			if (data.state.canReplay) $('#replay-btn').removeClass('hidden');
+		your_move: function (data) {
+			stateHandler(data);
+			showInfoMessage('<?php echo $lang->BoardYourMove(); ?>');
 		},
 				
 		rivals_move: function (data) {
 			
-			if (data.canMove === true) $('.make-move').show();
 			
-			$('#cell-'+data.cell).html('<?php $token === 'x' ? printToken('o') : printToken('x'); ?>');			
-			if (data.canReplay) $('#replay-btn').removeClass('hidden');
+			stateHandler(data);
+			showInfoMessage('<?php echo $lang->BoardRivalsMove(); ?>');
+		},
+				
+		win: function (data) {
+			stateHandler(data);
+			showInfoMessage('<?php echo $lang->BoardWin()?>');
+		},
+				
+		loss: function (data) {			
+			stateHandler(data);
+			showInfoMessage('<?php echo $lang->BoardLoss(); ?>');			
+		},
+				
+		draw: function (data) {
+			stateHandler(data);
+			showInfoMessage('<?php echo $lang->BoardDraw(); ?>');
 		},
 				
 		replay: function (data) {
@@ -69,6 +103,8 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 			$('#accept-modal').modal('hide');
 			$('.make-move').hide();
 			$('#replay-btn').hide();
+			
+			showInfoMessage('<?php echo $lang->BoardLeft();?>');
 		}
 		
 	};
@@ -99,7 +135,7 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		$('#replay-btn').click(function (e) {			
 			e.preventDefault();
 			$('#accept-modal').modal();
-			send($(this).attr('href'));			
+			send($(this).attr('href'), handlers);			
 		});
 		
 		$('#modal-accept-btn').click(function (e) {			
@@ -116,16 +152,13 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		{
 			e.preventDefault();
 			move.make($(this).data('cell'));		
-			send($(this).attr('href'), false, function (response) {
+			send($(this).attr('href'), handlers, false, function (response) {
 				
-				if (typeof response.type !== 'undefined' && response.type === 'move')
-				{				
-					if (move.cell !== response.body.cell) move.cancel();
-				} 
-				else
+				//console.log('cell', move.cell, response.body.cell);				
+				if (move.cell !== response.body.cell) 
 				{
 					move.cancel();
-				}
+				} 
 				
 			}, function () { move.cancel(); console.log('move error'); });			
 		});
@@ -196,8 +229,7 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 						<?php 
 						if (isset($board[$k]))
 						{
-							if ($board[$k] == 'o') { echo '<span class="glyphicon glyphicon-ok-circle"></span>'; }
-							elseif ($board[$k] == 'x') { echo '<span class="glyphicon glyphicon-remove"></span>'; }
+							printToken($board[$k], $zero, $cross);
 
 						} else {
 
@@ -218,8 +250,8 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		</div>				
 	</div>	
 </div>
-<?php } 
+<?php }
 
 RenderBoard($login, $lang, $board, $can_move, $can_replay, $token, 
 		$make_move_url, $leave_url, $replay_url, $accept_replay_url, $main_url, $quit_board_url);
-echo $view->render('XoGameBundle:Views:scripts.html.php', array('login' => $login));
+echo $view->render('XoGameBundle:Views:scripts.html.php', array('login' => $login, 'lang' => $lang));

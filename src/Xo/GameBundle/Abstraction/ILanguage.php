@@ -57,6 +57,7 @@ interface ILanguage {
 	public function AcceptAwaitingHeader();
 	public function AcceptAwaitingMessage();	
 
+	public function ErrorConnection();
 	public function ErrorReplay();	
 	public function ErrorLogin();
 	public function ErrorUser();

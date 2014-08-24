@@ -2,26 +2,6 @@
 
 namespace Xo\GameBundle\Entity;
 
-class RoomState {
-	
-	public $board = null;
-	public $canMove = null;
-	public $canReplay = null;
-	public $message = null;
-	public $token = null;
-	
-	public function __construct($board, $canMove, $canReplay, $token, $message = null)
-	{
-		$this->board = $board;
-		$this->canMove = $canMove;
-		$this->canReplay = $canReplay;
-		$this->token = $token;
-		$this->message = $message;
-	}
-	
-}
-		
-
 class Room {
 	
 	private $inviter_login = null;
@@ -46,14 +26,15 @@ class Room {
 		$this->$name = $value;
 	}
 	
+	public function makeMove($cell, $login)
+	{	
+		$curState = $this->getRoomState($login);		
+		if ($curState->canMove)	{ $this->board[$cell] = $curState->token; return true; }
+		else { return false; }
+	}
+	
 	private function CheckCombo($combo, $token)
 	{
-//		$result = true;		
-//		foreach ($combo as $cell)
-//		{
-//			if (!isset($this->board[$cell]) || $this->board[$cell] !== $token) { $result = false; break; }
-//		}
-		
 		
 		$intersec = array_intersect_assoc($this->board, array_fill_keys($combo, $token));
 		$result = count($intersec) === 3;
@@ -61,50 +42,50 @@ class Room {
 		return $result;
 	}
 	
-	private function GetStateAsInviter($isGameover, $isEven, \Xo\GameBundle\Abstraction\ILanguage $lang)
+	private function GetStateAsInviter($isGameover, $isEven)
 	{
 		$token = 'o';
-		return $this->CalcState($isGameover, !$isEven, $lang, $token);
+		return $this->CalcState($isGameover, !$isEven, $token);
 	}
 	
-	private function CalcState($isGameover, $isEven, \Xo\GameBundle\Abstraction\ILanguage $lang, $token)
+	private function CalcState($isGameover, $isEven, $token)
 	{
 		if ($isEven)
 		{			
 			if ($isGameover)
 			{
-				return new RoomState($this->board, false, true, $token, $lang->BoardLoss());
+				return new RoomState($this->board, false, true, $token, RoomState::STATE_LOSS);
 			}
 			else
 			{
-				return new RoomState($this->board, true, false, $token, $lang->BoardYourMove());
+				return new RoomState($this->board, true, false, $token, RoomState::STATE_YOUR_MOVE);
 			}
 		} 
 		else
 		{
 			if ($isGameover)
 			{
-				return new RoomState($this->board, false, false, $token, $lang->BoardWin());
+				return new RoomState($this->board, false, false, $token, RoomState::STATE_WIN);
 			}
 			else
 			{
-				return new RoomState($this->board, false, false, $token, $lang->BoardRivalsMove());				
+				return new RoomState($this->board, false, false, $token, RoomState::STATE_RIVALS_MOVE);				
 			}			
 		}
 		
 	}
 	
-	private function GetStateAsInvitee($isGameover, $isEven, \Xo\GameBundle\Abstraction\ILanguage $lang)
+	private function GetStateAsInvitee($isGameover, $isEven)
 	{
 		$token = 'x';
-		return $this->CalcState($isGameover, $isEven, $lang, $token);
+		return $this->CalcState($isGameover, $isEven, $token);
 	}
 	
-	public function getRoomState($login, \Xo\GameBundle\Abstraction\ILanguage $lang)
+	public function getRoomState($login)
 	{		
 		if (count($this->board) >= 9)
 		{			
-			return new RoomState($this->board, false, true, $this->invitee_login === $login ? 'x' : 'o', $lang->BoardDraw()); 
+			return new RoomState($this->board, false, true, $this->invitee_login === $login ? 'x' : 'o', RoomState::STATE_DRAW); 
 		}
 		
 		$combos = array(array(0, 1, 2), array(3, 4, 5), array(6, 7, 8), 
@@ -122,7 +103,7 @@ class Room {
 		}
 		
 		$state = $this->invitee_login === $login ?
-				$this->GetStateAsInvitee($isGameover, $isEven, $lang) : $this->GetStateAsInviter($isGameover, $isEven, $lang);
+				$this->GetStateAsInvitee($isGameover, $isEven) : $this->GetStateAsInviter($isGameover, $isEven);
 		
 		return $state;
 	}

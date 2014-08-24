@@ -4,6 +4,10 @@ namespace Xo\GameBundle\Model;
 
 class RusLang implements \Xo\GameBundle\Abstraction\ILanguage {
 	
+	public function ErrorConnection() {
+		return 'Ошибка соединения с сервером';
+	}
+	
 	public function BoardReplayAcceptModalBody() {
 		return 'Ожидание подтверждения';
 	}

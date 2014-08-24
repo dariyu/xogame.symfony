@@ -3,7 +3,11 @@
 namespace Xo\GameBundle\Model;
 
 class EngLang implements \Xo\GameBundle\Abstraction\ILanguage {
-
+	
+	public function ErrorConnection() {
+		return 'Connection error';
+	}	
+	
 	public function BoardReplayAcceptModalBody() {
 		return 'Awaiting accept';
 	}	
@@ -13,7 +17,7 @@ class EngLang implements \Xo\GameBundle\Abstraction\ILanguage {
 	}
 	
 	public function Signout() {
-		return 'Signout';
+		return 'Sign out';
 	}
 	
 	public function BoardDraw() {
@@ -41,7 +45,7 @@ class EngLang implements \Xo\GameBundle\Abstraction\ILanguage {
 	}
 	
 	public function SignupSuccess() {
-		return 'Signup successful';
+		return 'Sign up is successful';
 	}
 
 
@@ -54,11 +58,11 @@ class EngLang implements \Xo\GameBundle\Abstraction\ILanguage {
 	}
 	
 	public function ErrorSignin() {
-		return 'Signin error: invalid login or password';
+		return 'Sign in error: invalid login or password';
 	}
 
 	public function ErrorSignup() {
-		return 'Signup error: invalid login';
+		return 'Sign up error: invalid login';
 	}
 	
 	public function ErrorReplay() {
@@ -158,19 +162,19 @@ class EngLang implements \Xo\GameBundle\Abstraction\ILanguage {
 	}
 	
 	public function Signup() { 
-		return 'Signup'; 		
+		return 'Sign up'; 		
 	}
 	
 	public function Signin() {
-		return 'Signin';
+		return 'Sign in';
 	}
 	
 	public function SigninFormHeader() {
-		return 'Signin';
+		return 'Sign in';
 	}
 	
 	public function SignupFormHeader() {
-		return 'Signup';
+		return 'Sign up';
 	}
 	
 	public function FieldRequired()

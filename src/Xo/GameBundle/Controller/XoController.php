@@ -3,17 +3,15 @@
 namespace Xo\GameBundle\Controller;
 
 use Symfony\Component\HttpFoundation;
-
-
 use Xo\GameBundle\Model;
+use Xo\GameBundle\Entity;
 
 class Modal {
 	
 	public $title = null;
 	public $text = null;
 	public $buttons = array();
-	public $cancel = null;
-	
+	public $cancel = null;	
 }
 
 class StopWatchStub {
@@ -21,6 +19,38 @@ class StopWatchStub {
 	public function start($name) {}
 	public function stop($name) {}
 }
+
+class Notice {
+	
+	public $type = null;
+	public $body = null;
+	public $hydna = null;
+	
+	public function __construct($type, \Hydna & $hydna) {	
+		
+		$this->hydna = &$hydna;
+		$this->type = $type;
+		$this->body = new \stdClass();
+	}
+	
+	public function Broadcast()
+	{
+		// send a message
+		$json = json_encode($this);
+		error_log('hydna broadcast push: '.$json);
+		$this->hydna->push("http://xoapp.hydna.net/shared", $json);
+	}
+	
+	public function SendTo($addressee)
+	{
+		// send a message
+		$json = json_encode($this);
+		error_log('hydna push to '.$addressee.': '.$json);
+		$this->hydna->push("http://xoapp.hydna.net/user/$addressee", $json);
+	}
+}
+
+require_once(__DIR__."/hydna-push.php");
 
 class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller implements \Xo\GameBundle\Abstraction\IStateHandler {
 	
@@ -33,12 +63,14 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	private $model = null;
 	private $em = null;
 	private $stopwatch = null;
+	private $hydna = null;
 	
 	public function __construct() {		
 		
 		$this->lang = new Model\RusLang();
 		$this->response = new HttpFoundation\Response();
 		$this->model = new Model\Game($this->lang, null, null, null);		
+		$this->hydna = new \Hydna();
 	}
 	
 	public function indexAction()
@@ -59,6 +91,10 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 		$invitee = $request->get('invitee');
 
 		$this->model->Invite($invitee);
+		
+		$notice = new Notice('invited', $this->hydna);
+		$notice->body->inviter = $this->model->login;
+		$notice->SendTo($invitee);		
 
 		$response = new \stdClass();
 		$response->type = 'invite';
@@ -71,18 +107,40 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	public function makemoveAction($locale, HttpFoundation\Request $request)
 	{		
 		$cell = (integer)$request->get('cell');			
-		$this->Init($locale, $request);
-
+		$this->Init($locale, $request);		
+		
 		$this->stopwatch->start('makemove');
-		$state = $this->model->MakeMove($cell);
+		
+		$state = null;
+		$rivalState = null;		
+		$rivalLogin = null;
+		
+		$this->model->MakeMove($cell, $state, $rivalState, $rivalLogin);
+		
+		$noticeMap = array( 
+			Entity\RoomState::STATE_WIN => 'win',
+			Entity\RoomState::STATE_LOSS => 'loss',
+			Entity\RoomState::STATE_DRAW => 'draw',
+			Entity\RoomState::STATE_YOUR_MOVE => 'your_move',
+			Entity\RoomState::STATE_RIVALS_MOVE => 'rivals_move');
+		
+		$notice = new Notice($noticeMap[$rivalState->code], $this->hydna);
+		$notice->body->cell = $cell;
+		$notice->body->cellToken = $state->token;
+		$notice->body->state = $rivalState;
+
+		$this->stopwatch->start('game:hydna:SendToUser');	
+		$notice->SendTo($rivalLogin, $notice);
+		$this->stopwatch->stop('game:hydna:SendToUser');		
 		
 		$response = new \stdClass();
-		$response->type = 'move';
+		$response->type = $noticeMap[$state->code];
 		$response->body = new \stdClass();
-		$response->body->state = $state;
 		$response->body->cell = $cell;
+		$response->body->cellToken = $state->token;
+		
+		$response->body->state = $state;
 
-		$this->PostMessage('info', $state->message);		
 		$this->stopwatch->stop('makemove');
 		
 		return $this->FormJsonResponse($response);
@@ -91,7 +149,13 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	public function declineAction($locale, HttpFoundation\Request $request)
 	{
 		$this->Init($locale, $request);			
-		$this->model->Decline();
+		
+		$inviterLogin = null;
+		$this->model->Decline($inviterLogin);
+		
+		$notice = new Notice('declined', $this->hydna);
+		$notice->body->invitee = $this->model->login;
+		$notice->SendTo($inviterLogin);	
 		
 		return $this->FormJsonResponse('ok');
 	}
@@ -100,16 +164,27 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	{
 		$this->Init($locale, $request);
 
-		$this->model->Cancel();
-		$response = 'ok';
+		$inviteeLogin = null;
+		$this->model->Cancel($inviteeLogin);	
 		
-		return $this->FormJsonResponse($response);
+		$notice = new Notice('canceled', $this->hydna);
+		$notice->body->inviter = $this->model->login;
+		$notice->SendTo($inviteeLogin);			
+		
+		return $this->FormJsonResponse('ok');
 	}
 
 	public function leaveAction($locale, HttpFoundation\Request $request)
 	{
-		$this->Init($locale, $request);				
-		$this->model->Leave();
+		$this->Init($locale, $request);		
+		
+		$remainingPlayer = null;
+		$this->model->LeaveBoard($remainingPlayer);
+		
+		if ($remainingPlayer !== null) {			
+			$leaveMessage = new Notice('leave_game', $this->hydna);
+			$leaveMessage->SendTo($this->hydna, $remainingPlayer);
+		}
 		
 		return $this->RenderResponse($this->model->HandleState($this));
 	}
@@ -117,8 +192,13 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	public function replayAction($locale, HttpFoundation\Request $request)
 	{
 		$this->Init($locale, $request);
-		$this->model->ProposeReplay();
-		$response = 'ok';	
+		
+		$outRivalLogin = null;
+		$this->model->ProposeReplay($outRivalLogin);
+		$response = 'ok';
+		
+		$notice = new Notice('replay', $this->hydna);
+		$notice->SendTo($outRivalLogin);
 		
 		return $this->FormJsonResponse($response);
 	}
@@ -138,7 +218,12 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	public function acceptReplayAction($locale, HttpFoundation\Request $request)
 	{
 		$this->Init($locale, $request);
-		$this->model->Replay();			
+		
+		$outRivalLogin = null;
+		$this->model->Replay($outRivalLogin);
+		
+		$notice = new Notice('accept_replay', $this->hydna);
+		$notice->SendTo($outRivalLogin);
 		
 		return $this->RenderResponse($this->model->HandleState($this));
 	}
@@ -152,11 +237,12 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 		
 		if ($this->model->Signin($login, $hash) === true)
 		{
-			$this->model->UpdateLobby();
 			$this->SetCookies($login, $hash);
+			
 			$response = new \stdClass();
-			$response->html = $this->model->HandleState($this);
 			$response->login = $login;
+			$response->html = $this->model->HandleState($this);
+			
 		} else
 		{
 			$response = null;
@@ -164,11 +250,30 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 		
 		return $this->FormJsonResponse($response);
 	}
+	
+	private function RemoveTimedoutPlayers()
+	{
+		$leftLogins = array();
+		$this->model->RemoveTimedoutPlayers($leftLogins);
+		
+		if (count($leftLogins))
+		{		
+			$notice = new Notice('leaved', $this->hydna);
+			$notice->body->logins = $leftLogins;
+			$notice->Broadcast();
+		}
+	}
 
 	public function acceptAction($locale, HttpFoundation\Request $request)
 	{
 		$this->Init($locale, $request);	
-		$this->model->Accept();		
+		
+		$inviterLogin = null;
+		$this->model->Accept($inviterLogin);		
+
+		$notice = new Notice('accepted', $this->hydna);
+		$notice->body->invitee = $this->model->login;
+		$notice->SendTo($inviterLogin);		
 		
 		return $this->RenderResponse($this->model->HandleState($this));
 	}
@@ -176,7 +281,11 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	public function quitLobbyAction($locale, HttpFoundation\Request $request) {
 		
 		$this->Init($locale, $request);
-		$this->model->QuitLobby();
+		$this->model->QuitLobby();		
+		
+		$notice = new Notice('leaved', $this->hydna);
+		$notice->body->logins = array($this->model->login);
+		$notice->Broadcast();		
 			
 		return $this->FormJsonResponse();
 	}
@@ -189,13 +298,24 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 		return $this->FormJsonResponse();
 	}
 	
+	private function UpdateLobby() {
+		
+		$this->model->KeepAlive();
+		
+		$notice = new Notice('player_online', $this->hydna);	
+		$notice->body->login = $this->model->login;		
+		$notice->Broadcast();
+		
+		$this->RemoveTimedoutPlayers();		
+	}
+	
 	public function keepaliveAction($locale, HttpFoundation\Request $request)
 	{		
 		$this->Init($locale, $request);
-		$this->model->UpdateLobby();			
+		$this->UpdateLobby();
 		
 		return $this->FormJsonResponse('ok');
-	}	
+	}
 
 	public function signupAction($locale, HttpFoundation\Request $request)
 	{
@@ -203,8 +323,7 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 		$login = $request->get('login');
 		$hash = $this->toHash($request->get('password'));			
 
-		$this->model->Signup($login, $hash);
-		$this->model->UpdateLobby();
+		$this->model->Signup($login, $hash);		
 		
 		$this->SetCookies($login, $hash);			
 		$this->PostMessage('info', $this->lang->SignupSuccess());
@@ -213,8 +332,7 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 		$response->html = $this->model->HandleState($this);
 		$response->login = $login;		
 			
-		return $this->FormJsonResponse($response);
-		
+		return $this->FormJsonResponse($response);		
 	}
 	
 	private function toHash($password)
@@ -224,31 +342,28 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 
 	private function Init($locale, HttpFoundation\Request $request)
 	{
-		if ($this->has('debug.stopwatch')) {
-			
+		if ($this->has('debug.stopwatch')) {			
 			$this->stopwatch = $this->get('debug.stopwatch');
 		} 
-		else
-		{
+		else {
 			$this->stopwatch = new StopWatchStub();
-		}
-		
+		}		
 		$this->stopwatch->start('controller:init');
 		
 		$this->request = $request;
-		$this->SetLang($locale);
-		
+		$this->SetLang($locale);		
 		$this->em = $this->getDoctrine()->getManager();
 		
-		$this->stopwatch->start('model:init');		
+		$this->stopwatch->start('model:init');	
 		
 		$this->model->Init($this->em, $this->lang, 
 				$request->cookies->get('login'), $request->cookies->get('hash'), $this->stopwatch);	
 		
-		$this->stopwatch->stop('model:init');
-		
+		$this->stopwatch->stop('model:init');		
 		$this->stopwatch->stop('controller:init');
-	}	
+	}
+	
+	
 	
 	private function SetCookies($login, $hash)
 	{
@@ -284,7 +399,15 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	
 	public function HandleBoard(\Xo\GameBundle\Entity\RoomState $state) {
 		
-		if ($state->message !== null) { $this->PostMessage('info', $state->message); }
+		$stateMessages = array (
+			\Xo\GameBundle\Entity\RoomState::STATE_WIN => $this->lang->BoardWin(),
+			\Xo\GameBundle\Entity\RoomState::STATE_LOSS => $this->lang->BoardLoss(),
+			\Xo\GameBundle\Entity\RoomState::STATE_DRAW => $this->lang->BoardDraw(),
+			\Xo\GameBundle\Entity\RoomState::STATE_RIVALS_MOVE => $this->lang->BoardRivalsMove(),
+			\Xo\GameBundle\Entity\RoomState::STATE_YOUR_MOVE => $this->lang->BoardYourMove()
+		);
+		
+		$this->PostMessage('info', $stateMessages[$state->code]);
 		
 		return $this->renderView('XoGameBundle:Views:board.html.php', array(			
 			'board' => $state->board,
@@ -303,7 +426,8 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 	}
 	
 	private function FormLobbyBody($inviter = null, $invitee = null)
-	{	
+	{
+		$this->UpdateLobby();
 		$players = $this->model->GetLobbyPlayers();			
 		
 		return $this->renderView('XoGameBundle:Views:lobby.html.php', array(
@@ -323,7 +447,6 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 		
 	public function HandleLobby()
 	{
-		$this->model->UpdateLobby();		
 		return $this->FormLobbyBody();
 	}
 	
@@ -385,14 +508,20 @@ class XoController extends \Symfony\Bundle\FrameworkBundle\Controller\Controller
 			return $this->response->setContent(json_encode($response));
 		}
 		else
-		{			
+		{
+//			$hydna = $this->renderView('XoGameBundle:Views:scripts.html.php', array(
+//				'lang' => $this->lang,		
+//				'login' => $this->model->login));
+
 			$messages = $this->renderView('XoGameBundle:Views:messages.html.php', array('messages' => $messagesArray));
-			$navbar = $this->renderView('XoGameBundle:Views:navbar.html.php', 
-					array(	'lang' => $this->lang,
-							'login' => $this->model->login,
-							'signout_url' => $this->generateUrl('signout', array('locale' => $this->locale))));
 			
-			return $this->response->setContent($this->renderView('XoGameBundle:Views:layout.html.php', array(				
+			$navbar = $this->renderView('XoGameBundle:Views:navbar.html.php', 
+					array(	'lang' => $this->lang,		
+							'login' => $this->model->login,
+							'signout_url' => $this->generateUrl('signout', array('locale' => $this->locale))));			
+			
+			return $this->response->setContent($this->renderView('XoGameBundle:Views:layout.html.php', array(
+//				'scripts' => $hydna,
 				'messages' => $messages,
 				'navbar' => $navbar, 
 				'content' => $body)));

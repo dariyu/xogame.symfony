@@ -28,9 +28,8 @@
 	};
 	
 	var errorMsg = function(xhr, status, error) 
-	{ 
-		//console.log(xhr, status, error); 
-		handleMessages(xhr.responseJSON.messages); 
+	{		
+		if (typeof xhr.responseJSON !== 'undefined') handleMessages(xhr.responseJSON.messages); 
 	};	
 
 	var handleMessages = function (messages) 
@@ -55,8 +54,10 @@
 		}
 	};
 	
-	var handleNotify = function (obj)
+	var handleNotice = function (obj, handlers)
 	{
+		console.log('notice: ', obj);
+		
 		if (typeof handlers[obj.type] !== 'undefined')
 		{
 			handlers[obj.type](obj.body);			
@@ -78,7 +79,7 @@
 		$('#loader').fadeOut();
 	};
 
-	var send = function(url, loader, onSuccess, onError) {
+	var send = function(url, handlers, loader, onSuccess, onError) {
 
 		var hasLoader = (typeof loader !== 'undefined') ? loader : true;
 		if (hasLoader) loaderIn();
@@ -88,7 +89,7 @@
 			dataType: 'json',
 			success: function(data) { 
 				handleMessages(data.messages); 
-				if (typeof data.response !== 'undefined') handleNotify(data.response);
+				if (typeof data.response !== 'undefined') handleNotice(data.response, handlers);
 				if (typeof onSuccess !== 'undefined') onSuccess(data.response);
 			},
 			complete: function (data) { if (hasLoader) loaderOut(); },
@@ -128,7 +129,7 @@
 	
 	$(function (){
 		
-		fadeMessage($('#messages > div'));
+		//fadeMessage($('#messages > div'));
 		
 			
 	});

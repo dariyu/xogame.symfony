@@ -8,30 +8,6 @@ use Xo\GameBundle\Entity;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
 
-require_once(__DIR__."/hydna-push.php");
-
-class Notice {
-	
-	public $type = null;
-	public $body = null;
-	public $messages = array();
-	
-	public function __construct($type) {	
-		
-		$this->type = $type;
-		$this->body = new \stdClass();
-	}
-	
-	public function Post($type, $body)
-	{
-		$msg = new \stdClass();
-		$msg->type = $type;
-		$msg->body = $body;
-		
-		$this->messages[] = $msg;
-	}
-}
-
 class Game {
 
 	const LEAVE_TIMEOUT = 120;
@@ -44,38 +20,20 @@ class Game {
 	
 	const REPO_USER = 'User';
 	const REPO_ROOM = 'Room';
-	const REPO_LOBBY = 'LobbyPlayer';	
+	const REPO_LOBBY = 'LobbyPlayer';
 	
-	private $hydna = null;
 	private $em = null;
 	private $stopwatch = null;
 	private $lang = null;
 	
 	
 	public $login = null;
-	public	$messages = array();
+	public $messages = array();
 	
-	public function __construct(Abstraction\ILanguage $lang) {
-		
-		$this->hydna = new \Hydna();
+	public function __construct(Abstraction\ILanguage $lang) {		
+
 		$this->lang = $lang;		
-	}
-	
-	private function BroadcastToUsers(Notice $notify)
-	{
-		// send a message
-		$this->stopwatch->start('game:hydna:BroadcastToUsers');
-		$this->hydna->push("http://xoapp.hydna.net/shared", json_encode($notify));
-		$this->stopwatch->stop('game:hydna:BroadcastToUsers');
-	}
-	
-	public function SendToUser($addressee, Notice $notify)
-	{
-		// send a message
-		$this->stopwatch->start('game:hydna:SendToUser');
-		$this->hydna->push("http://xoapp.hydna.net/user/$addressee", json_encode($notify));
-		$this->stopwatch->stop('game:hydna:SendToUser');
-	}
+	}	
 	
 	public function Init(EntityManager $em, Abstraction\ILanguage $lang, $login, $hash, $stopwatch)
 	{
@@ -89,42 +47,21 @@ class Game {
 		}
 	}
 	
-	public function MakeMove($cell)
+	public function MakeMove($cell, &$outState, &$outRivalState, &$outRivalLogin)
 	{		
-		if ($this->login === null) 
-		{			
-			throw new \Exception($this->lang->ErrorMove());
-		}		
+		if ($this->login === null) { throw new \Exception($this->lang->ErrorMove()); }		
 		
 		$room = $this->FindPlayingGame();		
 		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorMove()); }
 		
-		$nMoves = count($room->board);
-		
-		if ($nMoves >= 9 || isset($room->board[$cell])) { throw new \Exception($this->lang->ErrorMove()); }		
-		
-		
-		$state = $room->getRoomState($this->login, $this->lang);
-		
-		if ($state->canMove !== true) { throw new \Exception($this->lang->ErrorMove()); }
-				
-		$board = $room->board;
-		$board[$cell] = $state->token;
-		$room->board = $board;
+		$nMoves = count($room->board);		
+		if ($nMoves >= 9 || isset($room->board[$cell])) { throw new \Exception($this->lang->ErrorMove()); }			
 
-		$rivalLogin = $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;
-		
-		$rivalState = $room->getRoomState($rivalLogin, $this->lang);
+		if ($room->makeMove($cell, $this->login) !== true) { throw new \Exception($this->lang->ErrorMove()); }		
 
-		$notify = new Notice('rivals_move');
-		$notify->body->cell = $cell;
-		$notify->body->canMove = $rivalState->canMove;
-		$notify->body->canReplay = $rivalState->canReplay;
-		$notify->Post('info', $rivalState->message);	
-
-		$this->SendToUser($rivalLogin, $notify);
-			
-		return $room->getRoomState($this->login, $this->lang);
+		$outRivalLogin = $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;
+		$outRivalState = $room->getRoomState($outRivalLogin);
+		$outState = $room->getRoomState($this->login);
 	}
 	
 	public function GetLobbyPlayers()
@@ -141,10 +78,9 @@ class Game {
 		$newMessage->body = $body;
 		
 		$this->messages[] = $newMessage;
-	}
+	}	
 	
-	
-	public function Leave()
+	public function LeaveBoard(&$remainingPlayer)
 	{
 		if ($this->login === null) { throw \Exception($this->lang->ErrorLeave()); }
 		
@@ -152,38 +88,31 @@ class Game {
 		
 		if (!($room instanceof Entity\Room)) { throw \Exception($this->lang->ErrorLeave()); }
 
-		$quitMessage = new Notice('leave_game');
-		$quitMessage->Post('info', $this->lang->BoardLeft());
-		
 		switch ($room->state)
 		{
 			case self::STATE_PLAYING: 
 				if ($this->login === $room->inviter_login)
-				{
-					$this->SendToUser($room->invitee_login, $quitMessage);				
+				{					
 					$room->state = self::STATE_LEFT_BY_INVITER;
+					$remainingPlayer = $room->invitee_login;
 				} else
-				{
-					$this->SendToUser($room->inviter_login, $quitMessage);				
+				{					
 					$room->state = self::STATE_LEFT_BY_INVITEE;
-				}
-				break;
+					$remainingPlayer = $room->inviter_login;
+				}				
 			
 			case self::STATE_LEFT_BY_INVITEE:
-				if ($this->login == $room->inviter_login) { $this->em->remove($room); } 
+				if ($this->login == $room->inviter_login) { $this->em->remove($room); $wasPlaying = false; } 
 				else { throw \Exception($this->lang->ErrorLeave()); }
 				break;
 				
 			case self::STATE_LEFT_BY_INVITER:
-				if ($this->login == $room->invitee_login) { $this->em->remove($room); } 
+				if ($this->login == $room->invitee_login) { $this->em->remove($room); $wasPlaying = false; } 
 				else { throw \Exception($this->lang->ErrorLeave()); }
 				break;
 			
 			default: throw \Exception($this->lang->ErrorLeave());
-		}		
-		
-		return true;
-		
+		}	
 	}
 	
 	public function FindPlayingGame()
@@ -240,19 +169,14 @@ class Game {
 	
 	public function QuitLobby()
 	{
-		if ($this->login === null) { throw new \Exception($this->lang->ErrorLeave()); }
-		
-		$logins = array($this->login);
-		$notify = new Notice('leaved');
-		$notify->body->logins = $logins;
-		$this->BroadcastToUsers($notify);		
+		if ($this->login === null) { throw new \Exception($this->lang->ErrorLeave()); }			
 		
 		$lobbyRepo = $this->GetRepo(self::REPO_LOBBY);
 		$qb = $lobbyRepo->createQueryBuilder('Player');
 		$qb
 			->delete()
-			->where($qb->expr()->in('Player.login', $logins))
-			->getQuery()->execute();
+			->where($qb->expr()->eq('Player.login', ':login'))
+			->setParameter('login', $this->login)->getQuery()->execute();
 		
 		return true;
 	}
@@ -261,11 +185,11 @@ class Game {
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorLeave()); }
 		
-		$this->Leave();
+		$this->LeaveBoard();
 		return $this->QuitLobby();
 	}
 
-	public function Accept()
+	public function Accept(&$outInviterLogin)
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorAccept()); }
 		
@@ -274,16 +198,13 @@ class Game {
 		
 		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorAccept()); }
 
-		$notify = new Notice('accepted');
-		$notify->body->invitee = $this->login;
-		$this->SendToUser($room->inviter_login, $notify);	
+		$outInviterLogin = $room->inviter_login;		
 		
 		$room->state = self::STATE_PLAYING;				
-		return true;
 	}
 	
 	
-	public function Decline()
+	public function Decline(&$outInviterLogin)
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorDecline()); }
 		
@@ -291,17 +212,13 @@ class Game {
 		$room = $repo->findOneBy(array('invitee_login' => $this->login, 'state' => self::STATE_INVITED));
 		
 		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorDecline()); }
-
-		$notify = new Notice('declined');
-		$notify->body->invitee = $this->login;
-		$this->SendToUser($room->inviter_login, $notify);	
 		
+		$outInviterLogin = $room->inviter_login;		
+		//$room->state = self::STATE_DECLINED;
 		$this->em->remove($room);
-		
-		return true;
 	}
 	
-	public function Cancel()
+	public function Cancel(&$outInviteeLogin)
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorCancel()); }
 		
@@ -310,10 +227,7 @@ class Game {
 		
 		if (!($game instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorCancel()); }
 		
-		$notify = new Notice('canceled');
-		$notify->body->inviter = $this->login;
-		$this->SendToUser($game->invitee_login, $notify);		
-		
+		$outInviteeLogin = $game->invitee_login;		
 		$this->em->remove($game);
 	}
 	
@@ -336,31 +250,28 @@ class Game {
 		return $this->em->getRepository('Xo\\GameBundle\\Entity\\'.$entity);		
 	}
 	
-	public function ProposeReplay()
+	public function ProposeReplay(&$outRivalLogin)
 	{
 		$room = $this->FindOpenGame();		
 		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorReplay()); }
 		
-		$notify = new Notice('replay');
-		$this->SendToUser($this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login, $notify);	
+		$outRivalLogin = $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;
+		
 		
 		return true;
 	}
 
-	public function Replay()
+	public function Replay(&$outRivalLogin)
 	{
 		$room = $this->FindOpenGame();		
 		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorReplay()); }
 
-		$notify = new Notice('accept_replay');
-		$this->SendToUser($this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login, $notify);	
+		$outRivalLogin = $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;		
 		
-		$room->board = array();
-		
-		return true;
+		$room->board = array();		
 	}
 	
-	private function RemoveTimedoutPlayers()
+	public function RemoveTimedoutPlayers(&$outLeftLogins)
 	{
 		$threshold = time() - self::LEAVE_TIMEOUT;
 		
@@ -370,27 +281,23 @@ class Game {
 		$criteria->where($criteria->expr()->lt('timestamp', $threshold));
 		$leaved = $lobbyRepo->matching($criteria);
 		
-		$leavedLogins = array();
+		$outLeftLogins = array();
 		foreach ($leaved as $player)
 		{
-			$leavedLogins[] = $player->login;
+			$outLeftLogins[] = $player->login;
 		}		
 		
-		if (is_array($leavedLogins) && !empty($leavedLogins))
-		{
-			$notify = new Notice('leaved');
-			$notify->body->logins = $leavedLogins;
-			$this->BroadcastToUsers($notify);			
-			
+		if (is_array($outLeftLogins) && !empty($outLeftLogins))
+		{		
 			$qb = $lobbyRepo->createQueryBuilder('Player');
 			$qb
 				->delete()
-				->where($qb->expr()->in('Player.login', $leavedLogins))
+				->where($qb->expr()->in('Player.login', $outLeftLogins))
 				->getQuery()->execute();
 		}
 	}
 	
-	public function UpdateLobby()
+	public function KeepAlive()
 	{
 		$lobbyRepo = $this->GetRepo('LobbyPlayer');
 		$player = $lobbyRepo->find($this->login);
@@ -400,17 +307,10 @@ class Game {
 			$player->timestamp = time();
 
 		} else
-		{
-			$notify = new Notice('player_online');	
-			$notify->body->login = $this->login;
-		
-			$this->BroadcastToUsers($notify);
-			
+		{			
 			$player = new Entity\LobbyPlayer($this->login, time());
 			$this->em->persist($player);
-		}
-		
-		$this->RemoveTimedoutPlayers();
+		}		
 	}
 	
 	public function SigninRoutine($login)
@@ -440,6 +340,7 @@ class Game {
 	
 	public function HasUser($login)
 	{
+		$this->em->flush();
 		$users = $this->GetRepo(self::REPO_USER);
 		$user = $users->find($login);
 		
@@ -493,10 +394,6 @@ class Game {
 		
 		$newRoom = new Entity\Room($this->login, $invitee_login, self::STATE_INVITED);
 		$this->em->persist($newRoom);
-		
-		$invitedMsg = new Notice('invited');
-		$invitedMsg->body->inviter = $this->login;
-		$this->SendToUser($invitee_login, $invitedMsg);		
 		
 		return true;		
 	}	

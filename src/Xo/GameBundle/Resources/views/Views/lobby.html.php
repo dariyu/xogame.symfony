@@ -1,4 +1,4 @@
-<?php echo $view->render('XoGameBundle:Views:scripts.html.php', array('login' => $login));
+<?php
 
 function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lang, $inviter, $invitee, $invite_url, 
 		$cancel_url, $accept_url, $decline_url, $keepalive_url, $main_url, $quit_url) {?>
@@ -36,7 +36,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 		$('#accept-modal').data('prevent-send-cancel', true).modal('hide');		
 	};
 
-	var handlers = {
+	handlers = {
 		
 		player_online: function (data) {
 			
@@ -61,7 +61,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 				$('a.btn', $newItem).click(function (e) {
 			
 					e.preventDefault();
-					send($(this).attr('href'));
+					send($(this).attr('href'), handlers);
 				});				
 			}	
 		},
@@ -116,7 +116,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 		$('.list-group a.btn').click(function (e) {
 
 			e.preventDefault();
-			send($(this).attr('href'));
+			send($(this).attr('href'), handlers);
 		});	
 		
 		$('#awaiting-modal').on('shown.bs.modal', function (e) {
@@ -135,32 +135,32 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 
 		$('#accept-modal').on('hidden.bs.modal', function (e) {
 
-			if (!$(this).data('prevent-send-cancel')) send('<?php echo $decline_url?>');			
+			if (!$(this).data('prevent-send-cancel')) send('<?php echo $decline_url?>', handlers);			
 			--modalsEnabled;			
 		});
 		
 		$('#awaiting-modal').on('hidden.bs.modal', function (e) {
 
-			if (!$(this).data('prevent-send-cancel')) send('<?php echo $cancel_url?>');			
+			if (!$(this).data('prevent-send-cancel')) send('<?php echo $cancel_url?>', handlers);			
 			--modalsEnabled;
 		});		
 		
 		$("#awaiting-modal a.btn").click(function (e) {			
 			e.preventDefault();
-			send($(this).attr('href'));			
+			send($(this).attr('href'), handlers);			
 			hideAwaitingModal();			
 		});
 
 		$("#accept-btn").click(function (e) {			
 			e.preventDefault();
 			clearInterval(keepalive);
-			getContent($(this).attr('href'));			
+			getContent($(this).attr('href'), handlers);			
 			hideAcceptModal();			
 		});
 
 		$("#decline-btn").click(function (e) {			
 			e.preventDefault();			
-			send($(this).attr('href'));			
+			send($(this).attr('href'), handlers);			
 			hideAcceptModal();			
 		});
 		
@@ -180,7 +180,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 		
 		keepalive = setInterval(function () {
 			
-			send('<?php echo $keepalive_url?>', false);
+			send('<?php echo $keepalive_url?>', handlers, false);
 			
 		}, 60000);
 				
@@ -280,5 +280,6 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 
 <?php }
 	
- RenderLobby($login, $players, $lang, $inviter, $invitee, 
+RenderLobby($login, $players, $lang, $inviter, $invitee, 
 		 $invite_url, $cancel_url, $accept_url, $decline_url, $keepalive_url, $main_url, $quit_url);
+echo $view->render('XoGameBundle:Views:scripts.html.php', array('login' => $login, 'lang' => $lang)); 
