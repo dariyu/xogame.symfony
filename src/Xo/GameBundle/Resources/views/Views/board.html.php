@@ -6,8 +6,8 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 	$k = 0;
 	$replay_btn_class = ($can_replay === true) ? '' : 'hidden';
 	
-	$zero = '<span class="glyphicon glyphicon-ok-circle"></span>';
-	$cross = '<span class="glyphicon glyphicon-remove"></span>';
+	$zero = '<span style="display: block; margin: auto; text-align: center;" class="glyphicon glyphicon-ok-circle"></span>';
+	$cross = '<span style="display: block; margin: auto; text-align: center;" class="glyphicon glyphicon-remove"></span>';
 	
 	function printToken($token, $zero, $cross)
 	{
@@ -25,23 +25,40 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 <script type="text/javascript">
 
 	var move = {
-		
 		make: function (cell) {
 
+			disableBoard();
 			this.cell = cell;
 			$('#cell-'+this.cell).html('<?php printToken($token, $zero, $cross)?>');
-			$('.make-move').hide();			
 		},
 				
 		cancel: function () {
-		
+
+			enableBoard();
 			console.log('move not accepted');
 			$('#cell-'+this.cell).html('');
-			$('.make-move').show();
 		}
-		
 	};
-	
+
+	var enableBoard = function () {
+
+		$('.make-move').css('cursor', 'pointer').click(function(e)
+		{
+			move.make($(this).data('cell'));
+			send($(this).data('href'), handlers, false, function (response) {
+				if (move.cell !== response.body.cell)
+				{
+					move.cancel();
+				}
+
+			}, function () { move.cancel(); console.log('move error'); });
+		});
+	};
+
+	var disableBoard = function () {
+		$('.make-move').css('cursor', 'default').off('click');
+	};
+
 	var stateHandler = function (data)
 	{
 		console.log(data);		
@@ -51,11 +68,10 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		{
 			$('#cell-'+data.cell).html(data.cellToken === 'o' ? '<?php echo $zero;?>' : '<?php echo $cross;?>');
 		}
-	
 		
 		if (data.state.canReplay) { $('#replay-btn').removeClass('hidden'); }
-		if (data.state.canMove) { $('.make-move').show(); } else { $('.make-move').hide(); }
-	};	
+		if (data.state.canMove) { enableBoard(); } else { disableBoard(); }
+	};
 
 	//notifies	
 	handlers = {
@@ -66,8 +82,6 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		},
 				
 		rivals_move: function (data) {
-			
-			
 			stateHandler(data);
 			showInfoMessage('<?php echo $lang->BoardRivalsMove(); ?>');
 		},
@@ -88,7 +102,6 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		},
 				
 		replay: function (data) {
-			
 			$('#replay-modal').modal();	
 		},
 				
@@ -101,9 +114,8 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		leave_game: function (data)
 		{
 			$('#accept-modal').modal('hide');
-			$('.make-move').hide();
 			$('#replay-btn').hide();
-			
+			disableBoard();
 			showInfoMessage('<?php echo $lang->BoardLeft();?>');
 		}
 		
@@ -122,20 +134,19 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 			getContent('<?php echo $leave_url ?>');
 		});
 		
-		$('#replay-modal').on('hide.bs.modal', function (e) {
+		$('#replay-modal').on('hidden.bs.modal', function (e) {
 			
 			if ($(this).data('prevent-leave') !== true)
 			{
 				getContent('<?php echo $leave_url ?>');
 			}
-			
 			$(this).data('prevent-leave', false);
 		});
 		
 		$('#replay-btn').click(function (e) {			
 			e.preventDefault();
 			$('#accept-modal').modal();
-			send($(this).attr('href'), handlers);			
+			send($(this).data('href'), handlers);
 		});
 		
 		$('#modal-accept-btn').click(function (e) {			
@@ -145,24 +156,11 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		});
 		
 		<?php if (!$can_move): ?>
-			$('.make-move').hide();		
+			disableBoard();
+		<?php else: ?>
+			enableBoard();
 		<?php endif; ?>
-			
-		$('.make-move').click(function(e) 
-		{
-			e.preventDefault();
-			move.make($(this).data('cell'));		
-			send($(this).attr('href'), handlers, false, function (response) {
-				
-				//console.log('cell', move.cell, response.body.cell);				
-				if (move.cell !== response.body.cell) 
-				{
-					move.cancel();
-				} 
-				
-			}, function () { move.cancel(); console.log('move error'); });			
-		});
-		
+
 		$(window).off("beforeunload").on("beforeunload", function(evt) {
 			
 			loaderIn();
@@ -173,7 +171,7 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 				complete: function () {  }
 			});
 			
-			return '';			
+			return null;
 		});
 		
 	});
@@ -191,8 +189,8 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 			<?php echo $lang->BoardReplayModalBody()?>
 		</div>
 		<div class="modal-footer">
-			<a id="modal-accept-btn" class="btn btn-primary" href="<?php echo $accept_replay_url?>"><?php echo $lang->Accept()?></a>
-			<a id="modal-leave-btn" class="btn btn-default" href="<?php echo $leave_url?>"><?php echo $lang->BoardLeave()?></a>
+			<button id="modal-accept-btn" class="btn btn-primary" data-href="<?php echo $accept_replay_url?>"><?php echo $lang->Accept()?></button>
+			<button id="modal-leave-btn" class="btn btn-default" data-href="<?php echo $leave_url?>"><?php echo $lang->BoardLeave()?></button>
 		</div>
 	  </div>
 	</div>
@@ -225,16 +223,14 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 				<?php for ($y = 0; $y < 3; ++ $y):?>
 				<tr>
 					<?php for ($x = 0; $x < 3; ++ $x):?>
-					<td id="cell-<?php echo $k?>" style="font-size: 30px; width: 33%; height: 33%;" class="text-center">
+					<td class="make-move" data-cell="<?php echo $k;?>" id="cell-<?php echo $k?>"
+						data-href="<?php echo $make_move_url.'?cell='.$k;?>"
+						style="font-size: 30px; width: 33%; height: 33%;" class="text-center">
 						<?php 
 						if (isset($board[$k]))
 						{
 							printToken($board[$k], $zero, $cross);
 
-						} else {
-
-							echo '<a data-cell="'.$k.'" class="make-move" style="display: block; height: 100%;" href="'.
-									$make_move_url.'?cell='.$k.'"></a>';
 						}
 						?>
 					</td>
@@ -245,8 +241,12 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		</div>
 
 		<div class="panel-footer">
-			<a id="leave-btn" href="<?php echo $leave_url;?>" class="btn btn-primary"><?php echo $lang->BoardLeave();?></a>					
-			<a id="replay-btn" href="<?php echo $replay_url;?>" class="btn btn-default <?php echo $replay_btn_class?>"><?php echo $lang->BoardReplay();?></a>
+			<button id="leave-btn" data-href="<?php echo $leave_url;?>" class="btn btn-primary">
+				<?php echo $lang->BoardLeave();?>
+			</button>
+			<button id="replay-btn" data-href="<?php echo $replay_url;?>" class="btn btn-default <?php echo $replay_btn_class?>">
+				<?php echo $lang->BoardReplay();?>
+			</button>
 		</div>				
 	</div>	
 </div>

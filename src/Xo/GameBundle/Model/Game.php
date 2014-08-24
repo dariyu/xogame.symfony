@@ -47,7 +47,7 @@ class Game {
 		}
 	}
 	
-	public function MakeMove($cell, &$outState, &$outRivalState, &$outRivalLogin)
+	public function MakeMove($cell)
 	{		
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorMove()); }		
 		
@@ -62,6 +62,8 @@ class Game {
 		$outRivalLogin = $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;
 		$outRivalState = $room->getRoomState($outRivalLogin);
 		$outState = $room->getRoomState($this->login);
+
+		return array($outState, $outRivalState, $outRivalLogin);
 	}
 	
 	public function GetLobbyPlayers()
@@ -80,13 +82,13 @@ class Game {
 		$this->messages[] = $newMessage;
 	}	
 	
-	public function LeaveBoard(&$remainingPlayer)
+	public function LeaveBoard()
 	{
-		if ($this->login === null) { throw \Exception($this->lang->ErrorLeave()); }
+		$remainingPlayer = false;
+		if ($this->login === null) { throw new \Exception($this->lang->ErrorLeave()); }
 		
-		$room = $this->FindOpenGame();
-		
-		if (!($room instanceof Entity\Room)) { throw \Exception($this->lang->ErrorLeave()); }
+		$room = $this->FindGame();
+		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorLeave()); }
 
 		switch ($room->state)
 		{
@@ -100,19 +102,22 @@ class Game {
 					$room->state = self::STATE_LEFT_BY_INVITEE;
 					$remainingPlayer = $room->inviter_login;
 				}				
-			
+				break;
+
 			case self::STATE_LEFT_BY_INVITEE:
 				if ($this->login == $room->inviter_login) { $this->em->remove($room); $wasPlaying = false; } 
-				else { throw \Exception($this->lang->ErrorLeave()); }
+				else { throw new \Exception($this->lang->ErrorLeave()); }
 				break;
 				
 			case self::STATE_LEFT_BY_INVITER:
 				if ($this->login == $room->invitee_login) { $this->em->remove($room); $wasPlaying = false; } 
-				else { throw \Exception($this->lang->ErrorLeave()); }
+				else { throw new \Exception($this->lang->ErrorLeave()); }
 				break;
 			
-			default: throw \Exception($this->lang->ErrorLeave());
-		}	
+			default: throw new \Exception($this->lang->ErrorLeave());
+		}
+
+		return $remainingPlayer;
 	}
 	
 	public function FindPlayingGame()
@@ -136,7 +141,7 @@ class Game {
 	{	
 		if ($this->login === null) { return $handler->HandleSignin(); }		
 
-		$room = $this->FindOpenGame();
+		$room = $this->FindGame();
 		
 		if ($room instanceof Entity\Room) 
 		{
@@ -170,23 +175,21 @@ class Game {
 	public function QuitLobby()
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorLeave()); }			
-		
+
+		$this->em->flush();
 		$lobbyRepo = $this->GetRepo(self::REPO_LOBBY);
-		$qb = $lobbyRepo->createQueryBuilder('Player');
-		$qb
-			->delete()
-			->where($qb->expr()->eq('Player.login', ':login'))
-			->setParameter('login', $this->login)->getQuery()->execute();
-		
+		$player = $lobbyRepo->find($this->login);
+		if ($player instanceof Entity\LobbyPlayer)
+		{
+			$this->em->remove($player);
+		}
+//			$lobbyRepo = $this->GetRepo(self::REPO_LOBBY);
+//			$qb = $lobbyRepo->createQueryBuilder('Player');
+//			$qb
+//				->delete()
+//				->where($qb->expr()->eq('Player.login', ':login'))
+//				->setParameter('login', $this->login)->getQuery()->execute();
 		return true;
-	}
-	
-	public function QuitBoard()
-	{
-		if ($this->login === null) { throw new \Exception($this->lang->ErrorLeave()); }
-		
-		$this->LeaveBoard();
-		return $this->QuitLobby();
 	}
 
 	public function Accept(&$outInviterLogin)
@@ -250,20 +253,16 @@ class Game {
 		return $this->em->getRepository('Xo\\GameBundle\\Entity\\'.$entity);		
 	}
 	
-	public function ProposeReplay(&$outRivalLogin)
+	public function ProposeReplay()
 	{
-		$room = $this->FindOpenGame();		
+		$room = $this->FindGame();
 		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorReplay()); }
-		
-		$outRivalLogin = $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;
-		
-		
-		return true;
+		return $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;
 	}
 
 	public function Replay(&$outRivalLogin)
 	{
-		$room = $this->FindOpenGame();		
+		$room = $this->FindGame();
 		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorReplay()); }
 
 		$outRivalLogin = $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;		
@@ -347,7 +346,7 @@ class Game {
 		return is_object($user);
 	}
 	
-	public function FindOpenGame()
+	public function FindGame()
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorLogin()); }
 		

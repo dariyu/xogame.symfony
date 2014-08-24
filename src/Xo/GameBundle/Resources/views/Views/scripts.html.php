@@ -15,7 +15,7 @@
 	{
 		var handleHydnaNotify = function (event)
 		{
-			console.log('incoming: ', event.data);
+			//console.log('incoming: ', event.data);
 			
 			var obj = JSON.parse(event.data);
 			handleNotice(obj, handlers);

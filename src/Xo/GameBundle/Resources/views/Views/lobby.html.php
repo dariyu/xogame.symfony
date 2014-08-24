@@ -44,26 +44,23 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 			
 			if ($('#'+id).length === 0) 
 			{				
-				$newItem = $('.panel-body .list-group-item.hidden').clone();	
-
+				$newItem = $('.panel-body .list-group-item.hidden').clone();
 				$newItem.attr('id', id);
 
 				$('.h5', $newItem).append(data.login);
 
 				if (data.login === '<?php echo $login?>')
-					$('a.btn', $newItem).remove();
+					$('.btn', $newItem).remove();
 				else					
-					$('a.btn', $newItem).attr('href', '<?php echo $invite_url?>?invitee=' + data.login);
+					$('.btn', $newItem).data('href', '<?php echo $invite_url?>?invitee=' + data.login);
+
+				$('.btn', $newItem).click(function (e) {
+					send($(this).data('href'), handlers);
+				});
 
 				$newItem.appendTo('.panel-body .list-group');
 				$newItem.removeClass('hidden');
-				
-				$('a.btn', $newItem).click(function (e) {
-			
-					e.preventDefault();
-					send($(this).attr('href'), handlers);
-				});				
-			}	
+			}
 		},
 			
 		leaved: function (data) {
@@ -113,10 +110,9 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 	/*events*/	
 	$(function ()
 	{		
-		$('.list-group a.btn').click(function (e) {
-
+		$('.list-group .btn').click(function (e) {
 			e.preventDefault();
-			send($(this).attr('href'), handlers);
+			send($(this).data('href'), handlers);
 		});	
 		
 		$('#awaiting-modal').on('shown.bs.modal', function (e) {
@@ -147,20 +143,20 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 		
 		$("#awaiting-modal a.btn").click(function (e) {			
 			e.preventDefault();
-			send($(this).attr('href'), handlers);			
+			send($(this).data('href'), handlers);
 			hideAwaitingModal();			
 		});
 
 		$("#accept-btn").click(function (e) {			
 			e.preventDefault();
 			clearInterval(keepalive);
-			getContent($(this).attr('href'), handlers);			
+			getContent($(this).data('href'), handlers);
 			hideAcceptModal();			
 		});
 
 		$("#decline-btn").click(function (e) {			
 			e.preventDefault();			
-			send($(this).attr('href'), handlers);			
+			send($(this).data('href'), handlers);
 			hideAcceptModal();			
 		});
 		
@@ -177,13 +173,11 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 			return '';			
 		});
 		
-		
 		keepalive = setInterval(function () {
 			
 			send('<?php echo $keepalive_url?>', handlers, false);
 			
 		}, 60000);
-				
 		
 		<?php if ($inviter !== null):?>
 			showAcceptModal('<?php echo $inviter?>');
@@ -209,8 +203,8 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 		<div class="modal-body">			
 		</div>
 		<div class="modal-footer">
-			<a id="accept-btn" class="btn btn-primary" href="<?php echo $accept_url?>"><?php echo $lang->Accept()?></a>
-			<a id="decline-btn" class="btn btn-default" href="<?php echo $decline_url?>"><?php echo $lang->Decline()?></a>
+			<button id="accept-btn" class="btn btn-primary" data-href="<?php echo $accept_url?>"><?php echo $lang->Accept()?></button>
+			<button id="decline-btn" class="btn btn-default" data-href="<?php echo $decline_url?>"><?php echo $lang->Decline()?></button>
 		</div>
 	  </div>
 	</div>
@@ -226,7 +220,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 		<div class="modal-body">
 		</div>
 		<div class="modal-footer">
-			<a class="btn btn-default" href="<?php echo $cancel_url?>"><?php echo $lang->Cancel()?></a>
+			<button class="btn btn-default" data-href="<?php echo $cancel_url?>"><?php echo $lang->Cancel()?></button>
 		</div>
 	  </div>
 	</div>
@@ -244,9 +238,9 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 		<div class="panel-body">					
 
 				<div class="list-group-item hidden">	
-					<a href="" class="btn btn-primary pull-right">
+					<button data-href="" class="btn btn-primary pull-right">
 					 <?php echo $lang->ToInvite();?>
-					</a>
+					</button>
 					<div class="h5">
 						<span class="glyphicon glyphicon-user"></span>
 					</div>
@@ -260,9 +254,9 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 					?>
 					<div class="list-group-item" id="player-<?php echo $player->login?>">
 					<?php if ($player->login !== $login):?>
-						<a href="<?php echo $invite_url.'?invitee='.$player->login?>" class="btn btn-primary pull-right">
+						<button data-href="<?php echo $invite_url.'?invitee='.$player->login?>" class="btn btn-primary pull-right">
 							<?php echo $lang->ToInvite()?>
-						</a>
+						</button>
 					<?php endif; ?>	
 						<div class="h5">
 							<span class="glyphicon glyphicon-user"></span>
