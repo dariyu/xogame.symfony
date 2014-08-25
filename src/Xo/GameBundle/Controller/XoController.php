@@ -201,8 +201,6 @@ class XoController extends BaseController implements Abstraction\IStateHandler {
 	
 	public function signoutAction($locale, HttpFoundation\Request $request)
 	{
-		$this->Init($locale, $request);
-		
 		$response = $this->redirect($this->generateUrl("main", array('locale' => $this->locale)));		
 		$response->headers->clearCookie('login');
 		$response->headers->clearCookie('hash');

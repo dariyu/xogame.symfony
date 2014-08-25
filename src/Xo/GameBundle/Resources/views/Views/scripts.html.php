@@ -33,20 +33,28 @@
 		var userChan = new HydnaChannel('xoapp.hydna.net/user/<?php echo $login?>', 'r');
 
 		// then register an event handler that alerts the data-part of messages 
-		// as they are received.	
-		sharedChan.onmessage = handleHydnaNotify;
-		userChan.onmessage = handleHydnaNotify;
-		
+		// as they are received.
+		sharedChan.onmessage = onHydnaError;
+		userChan.onmessage = onHydnaError;
+
 		// an error occured when connecting or opening the channel
 		sharedChan.onerror = onHydnaError;
 		userChan.onerror = onHydnaError;
-		
+
+		sharedChan.onclose = onHydnaError;
+
+		sharedChan.onopen = function () {
+			sharedChan.onmessage = handleHydnaNotify;
+			userChan.onmessage = handleHydnaNotify;
+			console.log('hydna open ok');
+		};
+
 		console.log('hydna init');
-		
+
 	} else
 	{
 		console.log('no hydna init');
 	}
-	
+
 	
 </script>
