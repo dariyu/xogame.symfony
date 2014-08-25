@@ -66,11 +66,12 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		//has move
 		if (data.cell !== 'undefined')
 		{
-			$('#cell-'+data.cell).html(data.cellToken === 'o' ? '<?php echo $zero;?>' : '<?php echo $cross;?>');
+			var token = data.cellToken === 'o' ? '<?php echo $zero;?>' : '<?php echo $cross;?>';
+			$('#cell-'+data.cell).removeClass('make-move').html(token);
 		}
 		
-		if (data.state.canReplay) { $('#replay-btn').removeClass('hidden'); }
 		if (data.state.canMove) { enableBoard(); } else { disableBoard(); }
+		if (data.state.canReplay) { $('#replay-btn').removeClass('hidden'); }		
 	};
 
 	//notifies	
