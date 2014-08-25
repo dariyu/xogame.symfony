@@ -58,11 +58,11 @@ class EngLang implements \Xo\GameBundle\Abstraction\ILanguage {
 	}
 	
 	public function ErrorSignin() {
-		return 'Sign in error: invalid login or password';
+		return 'Sign in error: incorrect login or password';
 	}
 
 	public function ErrorSignup() {
-		return 'Sign up error: invalid login';
+		return 'Sign up error: incorrect login';
 	}
 	
 	public function ErrorReplay() {
@@ -134,7 +134,7 @@ class EngLang implements \Xo\GameBundle\Abstraction\ILanguage {
 	}
 	
 	public function ErrorLogin() {
-		return 'Invalid login';
+		return 'Incorrect login';
 	}
 	
 	public function ErrorCancel() {
@@ -146,7 +146,7 @@ class EngLang implements \Xo\GameBundle\Abstraction\ILanguage {
 	}
 	
 	public function ErrorUser() {
-		return 'Invalid login';
+		return 'Incorrect login';
 	}
 	
 	public function InviteAcceptHeader() {
