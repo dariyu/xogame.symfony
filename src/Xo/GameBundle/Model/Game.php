@@ -82,39 +82,40 @@ class Game {
 		$this->messages[] = $newMessage;
 	}	
 	
-	public function LeaveBoard()
+	public function LeaveRoomIfExists()
 	{
 		$remainingPlayer = false;
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorLeave()); }
 		
 		$room = $this->FindGame();
-		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorLeave()); }
+		if ($room instanceof Entity\Room) {
 
-		switch ($room->state)
-		{
-			case self::STATE_PLAYING: 
-				if ($this->login === $room->inviter_login)
-				{					
-					$room->state = self::STATE_LEFT_BY_INVITER;
-					$remainingPlayer = $room->invitee_login;
-				} else
-				{					
-					$room->state = self::STATE_LEFT_BY_INVITEE;
-					$remainingPlayer = $room->inviter_login;
-				}				
-				break;
+			switch ($room->state)
+			{
+				case self::STATE_PLAYING:
+					if ($this->login === $room->inviter_login)
+					{
+						$room->state = self::STATE_LEFT_BY_INVITER;
+						$remainingPlayer = $room->invitee_login;
+					} else
+					{
+						$room->state = self::STATE_LEFT_BY_INVITEE;
+						$remainingPlayer = $room->inviter_login;
+					}
+					break;
 
-			case self::STATE_LEFT_BY_INVITEE:
-				if ($this->login == $room->inviter_login) { $this->em->remove($room); $wasPlaying = false; } 
-				else { throw new \Exception($this->lang->ErrorLeave()); }
-				break;
-				
-			case self::STATE_LEFT_BY_INVITER:
-				if ($this->login == $room->invitee_login) { $this->em->remove($room); $wasPlaying = false; } 
-				else { throw new \Exception($this->lang->ErrorLeave()); }
-				break;
-			
-			default: throw new \Exception($this->lang->ErrorLeave());
+				case self::STATE_LEFT_BY_INVITEE:
+					if ($this->login == $room->inviter_login) { $this->em->remove($room); $wasPlaying = false; }
+					else { throw new \Exception($this->lang->ErrorLeave()); }
+					break;
+
+				case self::STATE_LEFT_BY_INVITER:
+					if ($this->login == $room->invitee_login) { $this->em->remove($room); $wasPlaying = false; }
+					else { throw new \Exception($this->lang->ErrorLeave()); }
+					break;
+
+				default: throw new \Exception($this->lang->ErrorLeave());
+			}
 		}
 
 		return $remainingPlayer;
@@ -165,11 +166,9 @@ class Game {
 				case self::STATE_DECLINED:
 					return $handler->HandleLobby();			
 			}
-		} 
-		else
-		{
-			return $handler->HandleLobby();	
-		}		
+		}
+
+		return $handler->HandleLobby();
 	}
 	
 	public function QuitLobby()

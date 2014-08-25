@@ -98,7 +98,7 @@ class EngLang implements \Xo\GameBundle\Abstraction\ILanguage {
 	}
 	
 	public function BoardLeft() {
-		return 'Rival left the game';
+		return 'Rival had left the game';
 	}
 	
 	public function BoardHeader() {

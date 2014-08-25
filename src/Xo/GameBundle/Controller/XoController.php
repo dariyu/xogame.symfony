@@ -174,14 +174,8 @@ class XoController extends BaseController implements Abstraction\IStateHandler {
 	public function leaveAction($locale, HttpFoundation\Request $request)
 	{
 		$this->Init($locale, $request);		
-		
-		$remainingPlayer = $this->model->LeaveBoard();
-		
-		if ($remainingPlayer !== false) {
-			$leaveMessage = new Notice('leave_game');
-			$leaveMessage->SendTo($remainingPlayer, $this->hydna);
-		}
-		
+		$this->Quit();
+
 		return $this->RenderResponse($this->model->HandleState($this));
 	}
 	
@@ -291,15 +285,20 @@ class XoController extends BaseController implements Abstraction\IStateHandler {
 	public function quitBoardAction($locale, HttpFoundation\Request $request) {
 		
 		$this->Init($locale, $request);
-		$this->QuitBoard();
+		$this->Quit();
 			
 		return $this->FormJsonResponse();
 	}
 
-	private function QuitBoard()
+	private function Quit()
 	{
-		$this->model->LeaveBoard();
-		$this->model->QuitLobby();
+		$remainingPlayer = $this->model->LeaveRoomIfExists();
+		if ($remainingPlayer !== false) {
+			$leaveMessage = new Notice('leave_game');
+			$leaveMessage->SendTo($remainingPlayer, $this->hydna);
+		}
+
+		$this->QuitFromLobby();
 	}
 	
 	private function UpdateLobby() {
@@ -367,8 +366,6 @@ class XoController extends BaseController implements Abstraction\IStateHandler {
 		$this->stopwatch->stop('controller:init');
 	}
 	
-	
-	
 	private function SetCookies($login, $hash)
 	{
 		$this->response->headers->setCookie(new HttpFoundation\Cookie('login', $login));
@@ -377,18 +374,17 @@ class XoController extends BaseController implements Abstraction\IStateHandler {
 
 	private function SetLang($locale)
 	{
-		if ($locale === 'en')
-		{
-			$this->locale = $locale;	
-			$this->lang = new Model\EngLang();			
-		} 
-		else
-		{
-			$this->locale = 'ru';	
-			$this->lang = new Model\RusLang();			
+		switch ($locale) {
+			case 'en':
+				$this->locale = $locale;
+				$this->lang = new Model\EngLang();
+				break;
+
+			default:
+				$this->locale = 'ru';
+				$this->lang = new Model\RusLang();
 		}
-		
-	}	
+	}
 		
 	public function HandleSignin()
 	{		
