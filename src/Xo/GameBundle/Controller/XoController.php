@@ -1,5 +1,6 @@
 <?php
 
+
 namespace Xo\GameBundle\Controller;
 
 use Symfony\Component\HttpFoundation;
@@ -9,6 +10,7 @@ use Xo\GameBundle\Model;
 use Xo\GameBundle\Entity;
 use Xo\GameBundle\Abstraction;
 
+require_once(__DIR__."/hydna-push.php");
 
 class Modal {
 	
@@ -51,7 +53,7 @@ class Notice {
 	}
 }
 
-require_once(__DIR__."/hydna-push.php");
+
 
 class XoController extends BaseController implements Abstraction\IStateHandler {
 	
