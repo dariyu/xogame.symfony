@@ -171,7 +171,7 @@ class Game {
 		return $handler->HandleLobby();
 	}
 	
-	public function QuitLobby()
+	public function LeaveLobby()
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorLeave()); }			
 

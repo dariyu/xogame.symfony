@@ -145,7 +145,7 @@ class XoController extends BaseController implements Abstraction\IStateHandler {
 		return $this->FormJsonResponse($response);
 	}
 	
-	public function declineAction($locale, HttpFoundation\Request $request)
+	public function declineInviteAction($locale, HttpFoundation\Request $request)
 	{
 		$this->Init($locale, $request);			
 		
@@ -159,7 +159,7 @@ class XoController extends BaseController implements Abstraction\IStateHandler {
 		return $this->FormJsonResponse('ok');
 	}
 	
-	public function cancelAction($locale, HttpFoundation\Request $request)
+	public function cancelInviteAction($locale, HttpFoundation\Request $request)
 	{
 		$this->Init($locale, $request);
 
@@ -173,15 +173,15 @@ class XoController extends BaseController implements Abstraction\IStateHandler {
 		return $this->FormJsonResponse('ok');
 	}
 
-	public function leaveAction($locale, HttpFoundation\Request $request)
+	public function leaveRoomAction($locale, HttpFoundation\Request $request)
 	{
 		$this->Init($locale, $request);		
-		$this->Quit();
+		$this->LeaveRoom();
 
 		return $this->RenderResponse($this->model->HandleState($this));
 	}
 	
-	public function replayAction($locale, HttpFoundation\Request $request)
+	public function proposeReplayAction($locale, HttpFoundation\Request $request)
 	{
 		$this->Init($locale, $request);
 		$outRivalLogin = $this->model->ProposeReplay();
@@ -192,9 +192,9 @@ class XoController extends BaseController implements Abstraction\IStateHandler {
 		return $this->FormJsonResponse('ok');
 	}
 
-	private function QuitFromLobby() {
+	private function LeaveLobby() {
 
-		$this->model->QuitLobby();
+		$this->model->LeaveLobby();
 
 		$notice = new Notice('leaved');
 		$notice->body->logins = array($this->model->login);
@@ -259,7 +259,7 @@ class XoController extends BaseController implements Abstraction\IStateHandler {
 		}
 	}
 
-	public function acceptAction($locale, HttpFoundation\Request $request)
+	public function acceptInviteAction($locale, HttpFoundation\Request $request)
 	{
 		$this->Init($locale, $request);	
 		
@@ -276,27 +276,26 @@ class XoController extends BaseController implements Abstraction\IStateHandler {
 	public function quitLobbyAction($locale, HttpFoundation\Request $request) {
 		
 		$this->Init($locale, $request);
-		$this->QuitFromLobby();
+		$this->LeaveLobby();
 		return $this->FormJsonResponse();
 	}
 	
 	public function quitBoardAction($locale, HttpFoundation\Request $request) {
 		
 		$this->Init($locale, $request);
-		$this->Quit();
+		$this->LeaveRoom();
+		$this->LeaveLobby();
 			
 		return $this->FormJsonResponse();
 	}
 
-	private function Quit()
+	private function LeaveRoom()
 	{
 		$remainingPlayer = $this->model->LeaveRoomIfPlaying();
 		if ($remainingPlayer !== false) {
 			$leaveMessage = new Notice('leave_game');
 			$leaveMessage->SendTo($remainingPlayer, $this->hydna);
 		}
-
-		$this->QuitFromLobby();
 	}
 	
 	private function UpdateLobby() {

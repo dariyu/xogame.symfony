@@ -19,16 +19,16 @@ invite:
     defaults: { _controller: XoGameBundle:Xo:invite }
 
 cancel:
-    path: /{locale}/cancel
-    defaults: { _controller: XoGameBundle:Xo:cancel }
+    path: /{locale}/cancel_invite
+    defaults: { _controller: XoGameBundle:Xo:cancelInvite }
 
 accept:
-    path: /{locale}/accept
-    defaults: { _controller: XoGameBundle:Xo:accept }
+    path: /{locale}/accept_invite
+    defaults: { _controller: XoGameBundle:Xo:acceptInvite }
 
 decline:
-    path: /{locale}/decline
-    defaults: { _controller: XoGameBundle:Xo:decline }
+    path: /{locale}/decline_invite
+    defaults: { _controller: XoGameBundle:Xo:declineInvite }
 
 keepalive:
     path: /{locale}/keepalive
@@ -39,12 +39,12 @@ makemove:
     defaults: { _controller: XoGameBundle:Xo:makemove }
 
 leave:
-    path: /{locale}/leave
-    defaults: { _controller: XoGameBundle:Xo:leave }
+    path: /{locale}/leave_room
+    defaults: { _controller: XoGameBundle:Xo:leaveRoom }
 
 replay:
-    path: /{locale}/replay
-    defaults: { _controller: XoGameBundle:Xo:replay }
+    path: /{locale}/propose_replay
+    defaults: { _controller: XoGameBundle:Xo:proposeReplay }
 
 accept_replay:
     path: /{locale}/accept_replay
