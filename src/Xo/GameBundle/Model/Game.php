@@ -82,7 +82,7 @@ class Game {
 		$this->messages[] = $newMessage;
 	}	
 	
-	public function LeaveRoomIfExists()
+	public function LeaveRoomIfPlaying()
 	{
 		$remainingPlayer = false;
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorLeave()); }

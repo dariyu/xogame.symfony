@@ -44,9 +44,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 			
 			if ($('#'+id).length === 0) 
 			{				
-				$newItem = $('.panel-body .list-group-item.hidden').clone();
-				$newItem.attr('id', id);
-
+				$newItem = $('.panel-body .list-group-item.hidden').clone().attr('id', id);
 				$('.h5', $newItem).append(data.login);
 
 				if (data.login === '<?php echo $login?>')
@@ -58,8 +56,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 					send($(this).data('href'), handlers);
 				});
 
-				$newItem.appendTo('.panel-body .list-group');
-				$newItem.removeClass('hidden');
+				$newItem.appendTo('.panel-body .list-group').removeClass('hidden');
 			}
 		},
 			
@@ -141,7 +138,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 			--modalsEnabled;
 		});		
 		
-		$("#awaiting-modal a.btn").click(function (e) {			
+		$("#awaiting-modal .btn").click(function (e) {
 			e.preventDefault();
 			send($(this).data('href'), handlers);
 			hideAwaitingModal();			
@@ -170,7 +167,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 				complete: function () {}
 			});
 			
-			return '';			
+			return null;
 		});
 		
 		keepalive = setInterval(function () {

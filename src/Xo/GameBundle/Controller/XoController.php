@@ -202,8 +202,6 @@ class XoController extends BaseController implements Abstraction\IStateHandler {
 	public function signoutAction($locale, HttpFoundation\Request $request)
 	{
 		$this->Init($locale, $request);
-
-		$this->QuitFromLobby();
 		
 		$response = $this->redirect($this->generateUrl("main", array('locale' => $this->locale)));		
 		$response->headers->clearCookie('login');
@@ -292,7 +290,7 @@ class XoController extends BaseController implements Abstraction\IStateHandler {
 
 	private function Quit()
 	{
-		$remainingPlayer = $this->model->LeaveRoomIfExists();
+		$remainingPlayer = $this->model->LeaveRoomIfPlaying();
 		if ($remainingPlayer !== false) {
 			$leaveMessage = new Notice('leave_game');
 			$leaveMessage->SendTo($remainingPlayer, $this->hydna);
