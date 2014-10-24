@@ -44,7 +44,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 			
 			if ($('#'+id).length === 0) 
 			{				
-				$newItem = $('.panel-body .list-group-item.hidden').clone().attr('id', id);
+				var $newItem = $('.panel-body .list-group-item.hidden').clone().attr('id', id);
 				$('.h5', $newItem).append(data.login);
 
 				if (data.login === '<?php echo $login?>')

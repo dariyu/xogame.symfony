@@ -4,12 +4,14 @@ namespace Xo\GameBundle\Model;
 
 use Xo\GameBundle\Abstraction;
 use Xo\GameBundle\Entity;
+use Xo\GameBundle\Model;
 
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
 
 class Game {
 
+	const DEFAULT_LOCALE = 'ru';
 	const LEAVE_TIMEOUT = 120;
 	
 	const STATE_PLAYING = 0;	
@@ -24,29 +26,51 @@ class Game {
 	
 	private $em = null;
 	private $stopwatch = null;
-	private $lang = null;
-	
-	
-	public $login = null;
-	public $messages = array();
-	
-	public function __construct(Abstraction\ILanguage $lang) {		
 
-		$this->lang = $lang;		
-	}	
+	public $lang = null;
+	public $login;
+	public $messages = array();
+	public $locale;
 	
-	public function Init(EntityManager $em, Abstraction\ILanguage $lang, $login, $hash, $stopwatch)
-	{
-		$this->em = $em;
-		$this->lang = $lang;
+	public function __construct($locale, EntityManager & $em, $stopwatch, $login = null, $hash = null) {
+
+		$this->em = &$em;
 		$this->stopwatch = $stopwatch;
-		
-		if ($login !== null && $this->Signin($login, $hash) === true)
-		{
-			$this->login = $login;
+		$this->login = $login;
+
+		switch ($locale) {
+			case 'en':
+				$this->locale = $locale;
+				$this->lang = new Model\EngLang();
+				break;
+
+			default:
+				$this->locale = self::DEFAULT_LOCALE;
+				$this->lang = new Model\RusLang();
 		}
 	}
+
 	
+//	public function Init(EntityManager $em, Abstraction\ILanguage $lang, $login, $hash, $stopwatch)
+//	{
+//		$this->em = $em;
+//		$this->lang = $lang;
+//		$this->stopwatch = $stopwatch;
+//		
+//		if ($login !== null && $this->Signin($login, $hash) === true)
+//		{
+//			$this->login = $login;
+//		}
+//	}
+	
+
+	/**
+	 * Осуществляет ход
+	 * 
+	 * @param int $cell
+	 * @return array
+	 * @throws \Exception
+	 */
 	public function MakeMove($cell)
 	{		
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorMove()); }		
@@ -191,7 +215,7 @@ class Game {
 		return true;
 	}
 
-	public function Accept(&$outInviterLogin)
+	public function Accept()
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorAccept()); }
 		
@@ -202,11 +226,13 @@ class Game {
 
 		$outInviterLogin = $room->inviter_login;		
 		
-		$room->state = self::STATE_PLAYING;				
+		$room->state = self::STATE_PLAYING;
+
+		return $outInviterLogin;
 	}
 	
 	
-	public function Decline(&$outInviterLogin)
+	public function Decline()
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorDecline()); }
 		
@@ -218,9 +244,11 @@ class Game {
 		$outInviterLogin = $room->inviter_login;		
 		//$room->state = self::STATE_DECLINED;
 		$this->em->remove($room);
+
+		return $outInviterLogin;
 	}
 	
-	public function Cancel(&$outInviteeLogin)
+	public function Cancel()
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorCancel()); }
 		
@@ -229,8 +257,10 @@ class Game {
 		
 		if (!($game instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorCancel()); }
 		
-		$outInviteeLogin = $game->invitee_login;		
+		$invitee = $game->invitee_login;
 		$this->em->remove($game);
+
+		return $invitee;
 	}
 	
 	public function Signup($login, $hash)
@@ -243,7 +273,8 @@ class Game {
 		$user = new Entity\User($login, $hash);
 		$this->em->persist($user);
 		$this->SigninRoutine($login);
-		
+		$this->PostMessage('info', $this->lang->SignupSuccess());
+
 		return true;		
 	}
 	
@@ -259,17 +290,19 @@ class Game {
 		return $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;
 	}
 
-	public function Replay(&$outRivalLogin)
+	public function Replay()
 	{
 		$room = $this->FindGame();
 		if (!($room instanceof Entity\Room)) { throw new \Exception($this->lang->ErrorReplay()); }
 
 		$outRivalLogin = $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;		
 		
-		$room->board = array();		
+		$room->board = array();
+
+		return $outRivalLogin;
 	}
 	
-	public function RemoveTimedoutPlayers(&$outLeftLogins)
+	public function RemoveInactivePlayers()
 	{
 		$threshold = time() - self::LEAVE_TIMEOUT;
 		
@@ -293,10 +326,14 @@ class Game {
 				->where($qb->expr()->in('Player.login', $outLeftLogins))
 				->getQuery()->execute();
 		}
+
+		return $outLeftLogins;
 	}
 	
 	public function KeepAlive()
 	{
+		if ($this->login === null) throw \Exception($this->lang->ErrorUser());
+
 		$lobbyRepo = $this->GetRepo('LobbyPlayer');
 		$player = $lobbyRepo->find($this->login);
 

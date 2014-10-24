@@ -74,7 +74,7 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 		if (data.state.canReplay) { $('#replay-btn').removeClass('hidden'); }		
 	};
 
-	//notifies	
+	//notices
 	handlers = {
 		
 		your_move: function (data) {
@@ -168,8 +168,8 @@ function RenderBoard($login, \Xo\GameBundle\Abstraction\ILanguage $lang, $board,
 			$.ajax('<?php echo $quit_board_url?>', {
 				
 				async: false,
-				success: function () { loaderOut(); },
-				complete: function () {  }
+				success: function () {  },
+				complete: function () { loaderOut(); }
 			});
 			
 			return null;

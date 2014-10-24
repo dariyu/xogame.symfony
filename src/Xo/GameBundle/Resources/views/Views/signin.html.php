@@ -50,10 +50,7 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 			};
 			
 			var handleSuccess = function (data) {
-							
 				handleMessages(data.messages);
-				
-				
 				if (typeof data.response !== 'undefined') 
 				{					
 					$('#navbar-login').removeClass('hidden').append(data.response.login);
@@ -68,11 +65,11 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 
 				$(form).ajaxSubmit({
 
-					 success: function(data) {						
-
-					   handleSuccess(data);
-					 },
-					 complete: function () { loaderOut(); }
+					dataType: 'json',
+					success: function(data) {
+						handleSuccess(data);
+					},
+					complete: function () { loaderOut(); }
 				 });
 			};
 
