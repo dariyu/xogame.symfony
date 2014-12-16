@@ -1,63 +1,63 @@
 start:
     path:     /
-    defaults: { _controller:  XoGameBundle:Xo:index }
+    defaults: { _controller:  XoGameBundle:Main:index }
 
 main:
     path: /{locale}
-    defaults: { _controller: XoGameBundle:Xo:main }
+    defaults: { _controller: XoGameBundle:Main:main }
 
 signin:
     path: /{locale}/signin
-    defaults: { _controller: XoGameBundle:Xo:signin }
+    defaults: { _controller: XoGameBundle:Auth:signin }
 
 signup:
     path: /{locale}/signup
-    defaults: { _controller: XoGameBundle:Xo:signup }
+    defaults: { _controller: XoGameBundle:Auth:signup }
 
 invite:
     path: /{locale}/invite
-    defaults: { _controller: XoGameBundle:Xo:invite }
+    defaults: { _controller: XoGameBundle:Lobby:invite }
 
 cancel:
     path: /{locale}/cancel_invite
-    defaults: { _controller: XoGameBundle:Xo:cancelInvite }
+    defaults: { _controller: XoGameBundle:Lobby:cancelInvite }
 
 accept:
     path: /{locale}/accept_invite
-    defaults: { _controller: XoGameBundle:Xo:acceptInvite }
+    defaults: { _controller: XoGameBundle:Lobby:acceptInvite }
 
 decline:
     path: /{locale}/decline_invite
-    defaults: { _controller: XoGameBundle:Xo:declineInvite }
+    defaults: { _controller: XoGameBundle:Lobby:declineInvite }
 
 keepalive:
     path: /{locale}/keepalive
-    defaults: { _controller: XoGameBundle:Xo:keepalive }
+    defaults: { _controller: XoGameBundle:Lobby:keepalive }
 
 makemove:
     path: /{locale}/makemove
-    defaults: { _controller: XoGameBundle:Xo:makemove }
+    defaults: { _controller: XoGameBundle:Board:makemove }
 
 leave:
     path: /{locale}/leave_room
-    defaults: { _controller: XoGameBundle:Xo:leaveRoom }
+    defaults: { _controller: XoGameBundle:Board:leaveRoom }
 
 replay:
     path: /{locale}/propose_replay
-    defaults: { _controller: XoGameBundle:Xo:proposeReplay }
+    defaults: { _controller: XoGameBundle:Board:proposeReplay }
 
 accept_replay:
     path: /{locale}/accept_replay
-    defaults: { _controller: XoGameBundle:Xo:acceptReplay }
+    defaults: { _controller: XoGameBundle:Board:acceptReplay }
 
 signout:
     path: /{locale}/signout
-    defaults: { _controller: XoGameBundle:Xo:signout }
+    defaults: { _controller: XoGameBundle:Auth:signout }
 
 quit_lobby:
     path: /{locale}/quit_lobby
-    defaults: { _controller: XoGameBundle:Xo:quitLobby }
+    defaults: { _controller: XoGameBundle:Lobby:quitLobby }
 
 quit_board:
     path: /{locale}/quit_board
-    defaults: { _controller: XoGameBundle:Xo:quitBoard }
+    defaults: { _controller: XoGameBundle:Board:quitBoard }

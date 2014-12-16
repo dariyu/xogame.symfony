@@ -125,6 +125,7 @@ class XoView implements Abstraction\IStateHandler {
 
 	public function FormJsonResponse($data = null)
 	{
+		$this->model->Flush();
 		$obj = new \stdClass();
 		$obj->messages = array_merge($this->messages, $this->model->messages);
 
@@ -136,7 +137,7 @@ class XoView implements Abstraction\IStateHandler {
 	}
 
 	private function PostMessage($type, $body)
-	{
+	{		
 		$newMessage = new \stdClass();
 		$newMessage->type = $type;
 		$newMessage->body = $body;
@@ -146,6 +147,7 @@ class XoView implements Abstraction\IStateHandler {
 
 	public function RenderResponse(HttpFoundation\Request & $request)
 	{
+		$this->model->Flush();
 		$body = $this->model->HandleState($this);
 		$messagesArray = array_merge($this->messages, $this->model->messages);
 

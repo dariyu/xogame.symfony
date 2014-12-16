@@ -24,14 +24,50 @@ class Game {
 	const REPO_ROOM = 'Room';
 	const REPO_LOBBY = 'LobbyPlayer';
 	
+	/**
+	 *
+	 * @var \Doctrine\ORM\EntityManager
+	 */
 	private $em = null;
+	
+	/**
+	 * Профайлер
+	 * @var \Symfony\Component\Stopwatch\Stopwatch
+	 */
 	private $stopwatch = null;
 
+	/**
+	 * Языковые выражения
+	 * @var Abstraction\ILanguage
+	 */
 	public $lang = null;
+	
+	/**
+	 * Логин клиента
+	 * @var string
+	 */
 	public $login;
+	
+	/**
+	 * Список сообщений для клиента
+	 * @var array
+	 */
 	public $messages = array();
+	
+	/**
+	 *
+	 * @var string
+	 */
 	public $locale;
 	
+	/**
+	 * 
+	 * @param string $locale
+	 * @param EntityManager $em
+	 * @param \Symfony\Component\Stopwatch\Stopwatch $stopwatch
+	 * @param string $login
+	 * @param string $hash
+	 */
 	public function __construct($locale, EntityManager & $em, $stopwatch, $login = null, $hash = null) {
 
 		$this->em = &$em;
@@ -49,20 +85,13 @@ class Game {
 				$this->lang = new Model\RusLang();
 		}
 	}
-
 	
-//	public function Init(EntityManager $em, Abstraction\ILanguage $lang, $login, $hash, $stopwatch)
-//	{
-//		$this->em = $em;
-//		$this->lang = $lang;
-//		$this->stopwatch = $stopwatch;
-//		
-//		if ($login !== null && $this->Signin($login, $hash) === true)
-//		{
-//			$this->login = $login;
-//		}
-//	}
-	
+	/**
+	 * 
+	 */
+	public function Flush() {
+		$this->em->flush();
+	}
 
 	/**
 	 * Осуществляет ход
@@ -90,6 +119,11 @@ class Game {
 		return array($outState, $outRivalState, $outRivalLogin);
 	}
 	
+	
+	/**
+	 * Перечисляет авторизованых игроков
+	 * @return array
+	 */
 	public function GetLobbyPlayers()
 	{
 		$this->em->flush();
@@ -97,6 +131,11 @@ class Game {
 		return $repo->findAll();
 	}
 	
+	/**
+	 * Записывает сообщение клиенту в буфер
+	 * @param type $type
+	 * @param type $body	 * 
+	 */
 	private function PostMessage($type, $body)
 	{
 		$newMessage = new \stdClass();
@@ -106,6 +145,12 @@ class Game {
 		$this->messages[] = $newMessage;
 	}	
 	
+	
+	/**
+	 * Удаляет игрока из комнаты и устанавливает соотв. статус, или удаляет комнату, если игрок один
+	 * @return String|boolean
+	 * @throws \Exception
+	 */
 	public function LeaveRoomIfPlaying()
 	{
 		$remainingPlayer = false;
@@ -145,6 +190,10 @@ class Game {
 		return $remainingPlayer;
 	}
 	
+	/**
+	 * Возвращает комнату в которой прдолжает играть клиент
+	 * @return type
+	 */
 	public function FindPlayingGame()
 	{
 		if ($this->login === null) { return null; }
@@ -162,6 +211,11 @@ class Game {
 		return $matching[0];		
 	}
 	
+	/**
+	 * Вызывает переданный обработчик соотв. текущему состоянию игры
+	 * @param \Xo\GameBundle\Abstraction\IStateHandler $handler
+	 * @return string
+	 */
 	public function HandleState(Abstraction\IStateHandler & $handler)
 	{	
 		if ($this->login === null) { return $handler->HandleSignin(); }		
@@ -195,6 +249,11 @@ class Game {
 		return $handler->HandleLobby();
 	}
 	
+	/**
+	 * Исключает клиента из лобби
+	 * @return boolean
+	 * @throws \Exception
+	 */
 	public function LeaveLobby()
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorLeave()); }			
@@ -206,15 +265,14 @@ class Game {
 		{
 			$this->em->remove($player);
 		}
-//			$lobbyRepo = $this->GetRepo(self::REPO_LOBBY);
-//			$qb = $lobbyRepo->createQueryBuilder('Player');
-//			$qb
-//				->delete()
-//				->where($qb->expr()->eq('Player.login', ':login'))
-//				->setParameter('login', $this->login)->getQuery()->execute();
 		return true;
 	}
 
+	/**
+	 * Принимает приглашение
+	 * @return string логин пригласившего
+	 * @throws \Exception
+	 */
 	public function Accept()
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorAccept()); }
@@ -231,7 +289,11 @@ class Game {
 		return $outInviterLogin;
 	}
 	
-	
+	/**
+	 * Отклоняет приглашение клиенту
+	 * @return string логин пригласившего
+	 * @throws \Exception
+	 */
 	public function Decline()
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorDecline()); }
@@ -248,6 +310,11 @@ class Game {
 		return $outInviterLogin;
 	}
 	
+	/**
+	 * Отменяет ранее отданное приглашение
+	 * @return string
+	 * @throws \Exception
+	 */
 	public function Cancel()
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorCancel()); }
@@ -263,6 +330,13 @@ class Game {
 		return $invitee;
 	}
 	
+	/**
+	 * Осуществляет регистрацию
+	 * @param string $login
+	 * @param string $hash
+	 * @return boolean
+	 * @throws \Exception
+	 */
 	public function Signup($login, $hash)
 	{
 		if (!is_string($login) || empty($login) || strlen($login) > 64) {
@@ -278,11 +352,21 @@ class Game {
 		return true;		
 	}
 	
+	/**
+	 * Возвращает репозиторий соотв. сущности
+	 * @param string $entity
+	 * @return \Doctrine\ORM\EntityRepository
+	 */
 	private function GetRepo($entity)
 	{
 		return $this->em->getRepository('Xo\\GameBundle\\Entity\\'.$entity);		
 	}
 	
+	/**
+	 * 
+	 * @return string
+	 * @throws \Exception
+	 */
 	public function ProposeReplay()
 	{
 		$room = $this->FindGame();
@@ -290,6 +374,11 @@ class Game {
 		return $this->login === $room->inviter_login ? $room->invitee_login : $room->inviter_login;
 	}
 
+	/**
+	 * Инициирует переигровку
+	 * @return string
+	 * @throws \Exception
+	 */
 	public function Replay()
 	{
 		$room = $this->FindGame();
@@ -302,6 +391,10 @@ class Game {
 		return $outRivalLogin;
 	}
 	
+	/**
+	 * Исключает из лобби "забытых" со временем игроков
+	 * @return array список означенных игроков
+	 */
 	public function RemoveInactivePlayers()
 	{
 		$threshold = time() - self::LEAVE_TIMEOUT;
@@ -330,6 +423,10 @@ class Game {
 		return $outLeftLogins;
 	}
 	
+	/**
+	 * Учитывает напоминание об присутвующем игроке
+	 * @throws \Exception
+	 */
 	public function KeepAlive()
 	{
 		if ($this->login === null) throw \Exception($this->lang->ErrorUser());
@@ -348,11 +445,22 @@ class Game {
 		}		
 	}
 	
+	/**
+	 * Дополнительные действия при авторизации
+	 * @param string $login
+	 */
 	public function SigninRoutine($login)
 	{		
 		$this->login = $login;
 	}
 	
+	/**
+	 * Осуществляет авторизацию клиента
+	 * 
+	 * @param string $login
+	 * @param string $hash
+	 * @return boolean
+	 */
 	public function Signin($login, $hash)
 	{
 		if (!is_string($login) || empty($login)) { return false; }
@@ -373,6 +481,11 @@ class Game {
 		}		
 	}
 	
+	/**
+	 * Проверяет зарегистрирован ли игрок с заданным логином
+	 * @param string $login
+	 * @return boolean
+	 */
 	public function HasUser($login)
 	{
 		$this->em->flush();
@@ -382,6 +495,11 @@ class Game {
 		return is_object($user);
 	}
 	
+	/**
+	 * Поиск игровой комнаты в которой находится клиент
+	 * @return Entity\Room|null
+	 * @throws \Exception
+	 */
 	public function FindGame()
 	{
 		if ($this->login === null) { throw new \Exception($this->lang->ErrorLogin()); }
@@ -403,6 +521,12 @@ class Game {
 		return is_object($room) ? $room : null;
 	}
 	
+	/**
+	 * Приглашает в игру клиента с указанным логином 
+	 * @param string $invitee_login
+	 * @return boolean
+	 * @throws \Exception
+	 */
 	public function Invite($invitee_login)
 	{
 		if ($this->login === null || !$this->HasUser($invitee_login)) 

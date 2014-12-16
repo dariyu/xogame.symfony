@@ -140,7 +140,7 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 	</script>
 	
 
-<div class="col-lg-5 col-lg-offset-1">
+<div class="col-lg-6">
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h1 class="h1">
@@ -175,7 +175,7 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 		</div>
 	</div>
 </div>
-<div class="col-lg-5">
+<div class="col-lg-6">
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h1 class="h1">

@@ -224,7 +224,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 </div>
 
 
-<div class="col-lg-4 col-lg-offset-4">					
+<div class="col-lg-4">					
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h1 class="h1">

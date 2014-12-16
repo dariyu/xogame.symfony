@@ -2,12 +2,24 @@
 
 namespace Xo\GameBundle\Controller;
 
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation;
 
 use Xo\GameBundle\View\XoView;
+use Xo\GameBundle\Abstraction\IRenderer;
 
-class AuthController extends BaseController {
+/**
+ * Контроллер авторизации
+ */
+class AuthController extends Controller implements IRenderer {
+	use ControllerTrait;
 
+	/**
+	 * Выход, деавторизация
+	 * @param string $locale
+	 * @param \Symfony\Component\HttpFoundation\Request $request
+	 * @return HttpFoundation\Response
+	 */
 	public function signoutAction($locale, HttpFoundation\Request $request)
 	{
 		$response = $this->redirect($this->generateUrl("main", array('locale' => $locale)));
@@ -17,6 +29,12 @@ class AuthController extends BaseController {
 		return $response;
 	}	
 	
+	/**
+	 * Авторизация
+	 * @param string $locale
+	 * @param \Symfony\Component\HttpFoundation\Request $request
+	 * @return HttpFoundation\Response
+	 */
 	public function signinAction($locale, HttpFoundation\Request $request)
 	{
 		$model = $this->GetModel($locale, $request);

@@ -2,11 +2,14 @@
 
 namespace Xo\GameBundle\Controller;
 
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation;
 
 use Xo\GameBundle\View\XoView;
+use Xo\GameBundle\Abstraction\IRenderer;
 
-class LobbyController extends BaseController {
+class LobbyController extends Controller implements IRenderer {
+	use ControllerTrait;
 
 	public function inviteAction($locale, HttpFoundation\Request $request)
 	{

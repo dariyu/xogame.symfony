@@ -6,14 +6,24 @@ use Doctrine\ORM\EntityManager;
 use Xo\GameBundle\Model;
 use Xo\GameBundle\Abstraction;
 use Xo\GameBundle\Entity;
+use Symfony\Component\Stopwatch\Stopwatch;
 
 require_once(__DIR__."/hydna-push.php");
 
 class Notice {
 
-	public $type = null;
+	/**
+	 * 
+	 * @var string
+	 */
+	public $type = null;	
+	
 	public $body = null;
 
+	/**
+	 * 
+	 * @param string $type
+	 */
 	public function __construct($type) {
 		$this->type = $type;
 		$this->body = new \stdClass();
@@ -21,7 +31,6 @@ class Notice {
 
 	public function Broadcast(\Hydna & $hydna)
 	{
-		// send a message
 		$json = json_encode($this);
 		error_log('hydna broadcast push: '.$json);
 		$hydna->push("http://xoapp.hydna.net/shared", $json);
@@ -29,19 +38,32 @@ class Notice {
 
 	public function SendTo($addressee, \Hydna & $hydna)
 	{
-		// send a message
 		$json = json_encode($this);
 		error_log('hydna push to '.$addressee.': '.$json);
 		$hydna->push("http://xoapp.hydna.net/user/$addressee", $json);
 	}
 }
 
+/**
+ * Слой модели, предназначенный для рассылки уведомлений клиентам
+ * @author admin
+ *
+ */
 class HydnaLayer extends Model\Game {
 
 	private $stopwatch;
 	private $hydna;
 
-	public function __construct($locale, EntityManager & $em, $stopwatch, $login = null, $hash = null)
+	/**
+	 * 
+	 * @param string $locale
+	 * @param EntityManager $em
+	 * @param Stopwatch $stopwatch
+	 * @param string $login
+	 * @param string $hash
+	 */
+	public function __construct($locale, EntityManager & $em, $stopwatch, 
+								$login = null, $hash = null)
 	{
 		parent::__construct($locale, $em, $stopwatch, $login, $hash);
 

@@ -1,7 +1,7 @@
 <?php function RenderTemplate(Xo\GameBundle\Abstraction\ILanguage & $lang, $inviter, $accept_url) { ?>
 
 	<div class="row">		
-		<div class="col-lg-4 col-lg-offset-4">					
+		<div class="col-xs-4">					
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					<h1 class="h1">
