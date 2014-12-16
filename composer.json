@@ -13,7 +13,7 @@
 		"ext-mbstring": "*",
 		"sensio/generator-bundle": "~2.3",
 		"symfony/symfony": "2.5.*",
-		"symfony/icu": "1.1.*",
+		"symfony/icu": "~1.0",
         "doctrine/orm": "~2.2,>=2.2.3",
         "doctrine/doctrine-bundle": "~1.2",
         "twig/extensions": "~1.0",
