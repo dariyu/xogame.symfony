@@ -79,6 +79,9 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 					
 					login: {
 						required: true
+					},
+					password: {
+						required: true
 					}					
 				},
 
@@ -86,7 +89,11 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 					
 					login: {
 						required: '<?php echo $lang->FieldRequired()?>'
+					},
+					password: {
+						required: '<?php echo $lang->FieldRequired()?>'
 					}
+					
 				},
 					
 				submitHandler: submitHandler
@@ -105,7 +112,8 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 				messages: {
 					
 					password: {
-						minlength: '<?php echo $lang->PasswordLengthRequirement() ?> 5'
+						minlength: '<?php echo $lang->PasswordLengthRequirement() ?> 5',
+						required: '<?php echo $lang->FieldRequired()?>'
 					},
 					
 					password_confirm: {
@@ -123,7 +131,8 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 						required: true
 					},
 
-					password: {									
+					password: {
+						required: true,									
 						minlength: 1
 					},
 					password_confirm: {						
