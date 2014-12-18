@@ -42,9 +42,11 @@ class AuthController extends Controller implements IRenderer {
 		$login = $request->get('login');
 		$hash = $this->toHash($request->get('password'));
 
+		$signinResult = $model->Signin($login, $hash);
 		$view = new XoView($model, $this);
-		if ($model->Signin($login, $hash) === true)
-		{
+		
+		if ($signinResult === true)
+		{			
 			$view->SetCookies($login, $hash);
 			
 			$response = new \stdClass();
