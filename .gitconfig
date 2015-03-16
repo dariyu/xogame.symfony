@@ -1,0 +1,9 @@
+[core]
+	excludesfile = .gitignore
+	
+[remote "github"]
+	url = https://github.com/Dm84/xogame.symfony.git
+	excludesfile = +.githubignore
+	
+[branch "github"]
+	excludesfile = +.githubignore	
