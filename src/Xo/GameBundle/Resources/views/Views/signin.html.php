@@ -1,7 +1,8 @@
 <?php
+	
+	/* @var $model Xo\GameBundle\View\SigninViewModel */
 
-function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin_url, $action_signup_url, $login) {?>
-
+?>
 	<script type="text/javascript" src="/bundles/xogame/js/jquery.form.js"></script>
 	<script type="text/javascript" src="/bundles/xogame/js/jquery.validate.js"></script>
 	<script type="text/javascript">
@@ -88,10 +89,10 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 				messages: {
 					
 					login: {
-						required: '<?php echo $lang->FieldRequired()?>'
+						required: '<?php echo $model->lang->FieldRequired()?>'
 					},
 					password: {
-						required: '<?php echo $lang->FieldRequired()?>'
+						required: '<?php echo $model->lang->FieldRequired()?>'
 					}
 					
 				},
@@ -112,16 +113,16 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 				messages: {
 					
 					password: {
-						minlength: '<?php echo $lang->PasswordLengthRequirement() ?> 5',
-						required: '<?php echo $lang->FieldRequired()?>'
+						minlength: '<?php echo $model->lang->PasswordLengthRequirement() ?> 5',
+						required: '<?php echo $model->lang->FieldRequired()?>'
 					},
 					
 					password_confirm: {
-						equalTo: '<?php echo $lang->PasswordConfirmRequirement()?>'
+						equalTo: '<?php echo $model->lang->PasswordConfirmRequirement()?>'
 					},
 					
 					login: {
-						required: '<?php echo $lang->FieldRequired()?>'
+						required: '<?php echo $model->lang->FieldRequired()?>'
 					}
 				},
 				
@@ -153,32 +154,32 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h1 class="h1">
-			<?php echo $lang->SigninFormHeader(); ?>
+			<?php echo $model->lang->SigninFormHeader(); ?>
 			</h1>
 		</div>
 		<div class="panel-body">
-			<form id="signin" class="form" role="form" method="post" action="<?php echo $action_signin_url?>">
+			<form id="signin" class="form" role="form" method="post" action="<?php echo $model->signin_url?>">
 				<div class="form-group">
 					<input 
 						type="text" 
 						class="form-control" 
-						value="<?php echo $login ?>" 
+						value="<?php echo $model->login ?>" 
 						name="login" 
-						placeholder="<?php echo $lang->LoginPlaceholder();?>"/>
+						placeholder="<?php echo $model->lang->LoginPlaceholder();?>"/>
 				</div>
 				<div class="form-group">
 					<input 
 						type="password" 
 						class="form-control" 
 						name="password" 
-						placeholder="<?php echo $lang->PasswordPlaceholder();?>"/>
+						placeholder="<?php echo $model->lang->PasswordPlaceholder();?>"/>
 				</div>
 				<button 
 					class="btn btn-primary" 
 					type="submit" 
 					value="to_signin" 
 					name="action">
-						<?php echo $lang->Signin();?>
+						<?php echo $model->lang->Signin();?>
 				</button>
 			</form>			
 		</div>
@@ -188,18 +189,18 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h1 class="h1">
-			<?php echo $lang->SignupFormHeader(); ?>
+			<?php echo $model->lang->SignupFormHeader(); ?>
 			</h1>
 		</div>
 		<div class="panel-body">
-			<form id="signup" class="form" role="form" method="post" action="<?php echo $action_signup_url?>">
+			<form id="signup" class="form" role="form" method="post" action="<?php echo $model->signup_url?>">
 				<div class="form-group">
 					<input 
 						type="text" 
 						class="form-control" 
 						value="<?php echo $login ?>" 
 						name="login" 
-						placeholder="<?php echo $lang->LoginPlaceholder();?>"/>
+						placeholder="<?php echo $model->lang->LoginPlaceholder();?>"/>
 				</div>
 				<div class="form-group">
 					<input
@@ -207,7 +208,7 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 						type="password" 
 						class="form-control" 
 						name="password" 
-						placeholder="<?php echo $lang->PasswordPlaceholder();?>"/>
+						placeholder="<?php echo $model->lang->PasswordPlaceholder();?>"/>
 				</div>
 				<div class="form-group">
 					<input
@@ -215,7 +216,7 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 						type="password" 
 						class="form-control onkeyup" 
 						name="password_confirm" 
-						placeholder="<?php echo $lang->PasswordPlaceholderConfirm() ?>"/>
+						placeholder="<?php echo $model->lang->PasswordPlaceholderConfirm() ?>"/>
 				</div>
 
 				<button 
@@ -223,13 +224,9 @@ function RenderView(\Xo\GameBundle\Abstraction\ILanguage & $lang, $action_signin
 					type="submit" 
 					value="to_signin" 
 					name="action">
-						<?php echo $lang->Signup();?>
+						<?php echo $model->lang->Signup();?>
 				</button>
 			</form>			
 		</div>
 	</div>
 </div>
-
-<?php } 
-
-RenderView($lang, $signin_url, $signup_url, $login);

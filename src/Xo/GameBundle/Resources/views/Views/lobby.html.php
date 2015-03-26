@@ -1,7 +1,7 @@
 <?php
-
-function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lang, $inviter, $invitee, $invite_url, 
-		$cancel_url, $accept_url, $decline_url, $keepalive_url, $main_url, $quit_url) {?>
+	
+	/* @var $model Xo\GameBundle\View\LobbyModelView */
+?>
 
 <script type="text/javascript">
 	
@@ -11,7 +11,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 			
 		if (!modalsEnabled)
 		{
-			$('#awaiting-modal .modal-body').text('<?php echo $lang->AcceptAwaitingMessage()?>: '+invitee);
+			$('#awaiting-modal .modal-body').text('<?php echo $model->lang->AcceptAwaitingMessage()?>: '+invitee);
 			$('#awaiting-modal').modal();
 		}		
 	};
@@ -20,7 +20,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 
 		if (!modalsEnabled)
 		{
-			$('#accept-modal .modal-body').text('<?php echo $lang->InviteAcceptMessage()?>: '+inviter);
+			$('#accept-modal .modal-body').text('<?php echo $model->lang->InviteAcceptMessage()?>: '+inviter);
 			$('#accept-modal').modal();
 		}	
 		
@@ -47,10 +47,10 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 				var $newItem = $('.panel-body .list-group-item.hidden').clone().attr('id', id);
 				$('.h5', $newItem).append(data.login);
 
-				if (data.login === '<?php echo $login?>')
+				if (data.login === '<?php echo $model->login?>')
 					$('.btn', $newItem).remove();
 				else					
-					$('.btn', $newItem).data('href', '<?php echo $invite_url?>?invitee=' + data.login);
+					$('.btn', $newItem).data('href', '<?php echo $model->invite_url?>?invitee=' + data.login);
 
 				$('.btn', $newItem).click(function (e) {
 					send($(this).data('href'), handlers);
@@ -81,13 +81,13 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 		canceled: function (data)
 		{
 			hideAcceptModal();			
-			showInfoMessage('<?php echo $lang->CancelNotify()?> - ' + data.inviter);
+			showInfoMessage('<?php echo $model->lang->CancelNotify()?> - ' + data.inviter);
 		},
 		
 		declined: function (data)
 		{
 			hideAwaitingModal();			
-			showInfoMessage('<?php echo $lang->DeclineNotify()?> - ' + data.invitee);
+			showInfoMessage('<?php echo $model->lang->DeclineNotify()?> - ' + data.invitee);
 		},
 				
 		accepted: function (data)
@@ -96,7 +96,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 			hideAwaitingModal();
 			
 			clearInterval(keepalive);
-			getContent('<?php echo $main_url?>');
+			getContent('<?php echo $model->main_url?>');
 		}
 		
 	};	
@@ -128,13 +128,13 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 
 		$('#accept-modal').on('hidden.bs.modal', function (e) {
 
-			if (!$(this).data('prevent-send-cancel')) send('<?php echo $decline_url?>', handlers);			
+			if (!$(this).data('prevent-send-cancel')) send('<?php echo $model->decline_url?>', handlers);			
 			--modalsEnabled;			
 		});
 		
 		$('#awaiting-modal').on('hidden.bs.modal', function (e) {
 
-			if (!$(this).data('prevent-send-cancel')) send('<?php echo $cancel_url?>', handlers);			
+			if (!$(this).data('prevent-send-cancel')) send('<?php echo $model->cancel_url?>', handlers);			
 			--modalsEnabled;
 		});		
 		
@@ -160,7 +160,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 		$(window).off("beforeunload").on("beforeunload", function(evt) {
 			
 			loaderIn();
-			$.ajax('<?php echo $quit_url?>', {
+			$.ajax('<?php echo $model->quit_url?>', {
 				
 				async: false,
 				success: function () { loaderOut(); },
@@ -172,16 +172,16 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 		
 		keepalive = setInterval(function () {
 			
-			send('<?php echo $keepalive_url?>', handlers, false);
+			send('<?php echo $model->keepalive_url?>', handlers, false);
 			
 		}, 60000);
 		
 		<?php if ($inviter !== null):?>
-			showAcceptModal('<?php echo $inviter?>');
+			showAcceptModal('<?php echo $model->inviter?>');
 		<?php endif;?>
 
 		<?php if ($invitee !== null):?>
-			showAwaitingModal('<?php echo $invitee?>');
+			showAwaitingModal('<?php echo $model->invitee?>');
 		<?php endif;?>
 		});
 			
@@ -195,13 +195,13 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 			  <span aria-hidden="true">&times;</span>
 			  <span class="sr-only">Close</span>
 		  </button>
-		  <h4 class="modal-title" id="myModalLabel"><?php echo $lang->InviteAcceptHeader()?></h4>
+		  <h4 class="modal-title" id="myModalLabel"><?php echo $model->lang->InviteAcceptHeader()?></h4>
 		</div>
 		<div class="modal-body">			
 		</div>
 		<div class="modal-footer">
-			<button id="accept-btn" class="btn btn-primary" data-href="<?php echo $accept_url?>"><?php echo $lang->Accept()?></button>
-			<button id="decline-btn" class="btn btn-default" data-href="<?php echo $decline_url?>"><?php echo $lang->Decline()?></button>
+			<button id="accept-btn" class="btn btn-primary" data-href="<?php echo $model->accept_url?>"><?php echo $model->lang->Accept()?></button>
+			<button id="decline-btn" class="btn btn-default" data-href="<?php echo $model->decline_url?>"><?php echo $model->lang->Decline()?></button>
 		</div>
 	  </div>
 	</div>
@@ -212,12 +212,14 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 	  <div class="modal-content">
 		<div class="modal-header">
 		  <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-		  <h4 class="modal-title" id="myModalLabel"><?php echo $lang->AcceptAwaitingHeader()?></h4>
+		  <h4 class="modal-title" id="myModalLabel"><?php echo $model->lang->AcceptAwaitingHeader()?></h4>
 		</div>
 		<div class="modal-body">
 		</div>
 		<div class="modal-footer">
-			<button class="btn btn-default" data-href="<?php echo $cancel_url?>"><?php echo $lang->Cancel()?></button>
+			<button class="btn btn-default" data-href="<?php echo $model->cancel_url?>">
+				<?php echo $model->lang->Cancel()?>
+			</button>
 		</div>
 	  </div>
 	</div>
@@ -228,7 +230,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h1 class="h1">
-				<?php echo $lang->LobbyPlayersList()?>
+				<?php echo $model->lang->LobbyPlayersList()?>
 				<span class="badge" style="vertical-align: top;"></span>
 			</h1>					
 		</div>
@@ -236,7 +238,7 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 
 				<div class="list-group-item hidden">	
 					<button data-href="" class="btn btn-primary pull-right">
-					 <?php echo $lang->ToInvite();?>
+					 <?php echo $model->lang->ToInvite();?>
 					</button>
 					<div class="h5">
 						<span class="glyphicon glyphicon-user"></span>
@@ -249,15 +251,15 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 					<?php foreach ($players as $player):								
 						if ($player instanceof \Xo\GameBundle\Entity\LobbyPlayer):
 					?>
-					<div class="list-group-item" id="player-<?php echo $player->login?>">
+					<div class="list-group-item" id="player-<?php echo $model->player->login?>">
 					<?php if ($player->login !== $login):?>
-						<button data-href="<?php echo $invite_url.'?invitee='.$player->login?>" class="btn btn-primary pull-right">
-							<?php echo $lang->ToInvite()?>
+						<button data-href="<?php echo $model->invite_url.'?invitee='.$player->login?>" class="btn btn-primary pull-right">
+							<?php echo $model->lang->ToInvite()?>
 						</button>
 					<?php endif; ?>	
 						<div class="h5">
 							<span class="glyphicon glyphicon-user"></span>
-							<?php echo $player->login; ?>
+							<?php echo $model->player->login; ?>
 						</div>							
 						<div class="clearfix"></div>
 
@@ -269,8 +271,6 @@ function RenderLobby($login, $players, \Xo\GameBundle\Abstraction\ILanguage $lan
 	</div>			
 </div>
 
-<?php }
-	
-RenderLobby($login, $players, $lang, $inviter, $invitee, 
-		 $invite_url, $cancel_url, $accept_url, $decline_url, $keepalive_url, $main_url, $quit_url);
-echo $view->render('XoGameBundle:Views:scripts.html.php', array('login' => $login, 'lang' => $lang)); 
+<?php
+
+echo $model->view->render('XoGameBundle:Views:scripts.html.php', array('login' => $model->login, 'lang' => $model->lang)); 

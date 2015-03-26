@@ -10,7 +10,12 @@ class RoomState {
 	const STATE_LOSS = 3;
 	const STATE_DRAW = 4;
 	
+	/**
+	 *
+	 * @var array 
+	 */
 	public $board = null;
+	
 	public $canMove = null;
 	public $canReplay = null;
 	public $message = null;
